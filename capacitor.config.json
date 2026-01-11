@@ -1,0 +1,18 @@
+
+{
+  "appId": "com.oman.socialstudies",
+  "appName": "الكتاب التفاعلي",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 2000,
+      "launchAutoHide": true,
+      "backgroundColor": "#ffffffff",
+      "androidSplashResourceName": "splash",
+      "showSpinner": false
+    }
+  }
+}
