@@ -1,57 +1,34 @@
+import { useState, useEffect } from 'react';
 
-import React, { useState } from 'react';
-import CourseIndex from './components/CourseIndex';
-import WeatherLesson from './components/WeatherLesson';
-import OmanClimateLesson from './components/OmanClimateLesson';
-import EarthLesson from './components/EarthLesson';
-import ExternalLesson from './components/ExternalLesson';
-import AbbasidLesson from './components/AbbasidLesson';
-import OmanAbbasidLesson from './components/OmanAbbasidLesson';
-import OmanCivilizationLesson from './components/OmanCivilizationLesson';
-import BasicStatuteLesson from './components/BasicStatuteLesson';
-import StateInstitutionsLesson from './components/StateInstitutionsLesson';
-import Unit1Assessment from './components/Unit1Assessment';
-import Unit2Assessment from './components/Unit2Assessment';
-import Unit3Assessment from './components/Unit3Assessment';
-import FinalExam from './components/FinalExam';
-import { LessonId } from './types';
+// تعريف الأنواع لـ TypeScript
+declare global {
+  interface Window {
+    electron: any;
+  }
+}
 
-const App: React.FC = () => {
-  const [activeLesson, setActiveLesson] = useState<LessonId>(null);
+function App() {
+  const [isElectron, setIsElectron] = useState(false);
+
+  useEffect(() => {
+    if (window.electron) {
+      setIsElectron(true);
+    }
+  }, []);
 
   return (
-    <>
-      {activeLesson === 'WEATHER' ? (
-        <WeatherLesson onBack={() => setActiveLesson(null)} />
-      ) : activeLesson === 'OMAN_CLIMATE' ? (
-        <OmanClimateLesson onBack={() => setActiveLesson(null)} />
-      ) : activeLesson === 'EARTH_LAYERS' ? (
-        <EarthLesson onBack={() => setActiveLesson(null)} />
-      ) : activeLesson === 'EXTERNAL_PROCESSES' ? (
-        <ExternalLesson onBack={() => setActiveLesson(null)} />
-      ) : activeLesson === 'UNIT_1_ASSESSMENT' ? (
-        <Unit1Assessment onBack={() => setActiveLesson(null)} />
-      ) : activeLesson === 'ABBASID_ERA' ? (
-        <AbbasidLesson onBack={() => setActiveLesson(null)} />
-      ) : activeLesson === 'OMAN_ABBASID' ? (
-        <OmanAbbasidLesson onBack={() => setActiveLesson(null)} />
-      ) : activeLesson === 'OMAN_CIVILIZATION' ? (
-        <OmanCivilizationLesson onBack={() => setActiveLesson(null)} />
-      ) : activeLesson === 'UNIT_2_ASSESSMENT' ? (
-        <Unit2Assessment onBack={() => setActiveLesson(null)} />
-      ) : activeLesson === 'BASIC_STATUTE' ? (
-        <BasicStatuteLesson onBack={() => setActiveLesson(null)} />
-      ) : activeLesson === 'STATE_INSTITUTIONS' ? (
-        <StateInstitutionsLesson onBack={() => setActiveLesson(null)} />
-      ) : activeLesson === 'UNIT_3_ASSESSMENT' ? (
-        <Unit3Assessment onBack={() => setActiveLesson(null)} />
-      ) : activeLesson === 'FINAL_EXAM' ? (
-        <FinalExam onBack={() => setActiveLesson(null)} />
-      ) : (
-        <CourseIndex onSelectLesson={(id) => setActiveLesson(id)} />
-      )}
-    </>
+    <div className="min-h-screen flex items-center justify-center p-4">
+      <div className="bg-white p-8 rounded-2xl shadow-xl text-center max-w-md w-full animate-fade-in">
+        <h1 className="text-2xl font-bold text-indigo-600 mb-4">الكتاب التفاعلي</h1>
+        <p className="text-gray-600 mb-6">
+          {isElectron ? 'يعمل الآن كتطبيق سطح مكتب!' : 'يعمل الآن على المتصفح / الهاتف'}
+        </p>
+        <button className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition w-full">
+          ابدأ التصفح
+        </button>
+      </div>
+    </div>
   );
-};
+}
 
 export default App;
