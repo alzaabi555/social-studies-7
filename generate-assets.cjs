@@ -1,42 +1,49 @@
 const fs = require('fs');
 const path = require('path');
 
-// إنشاء المجلدات إذا لم تكن موجودة
-const ensureDir = (dir) => {
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
-};
+const publicDir = path.join(__dirname, '../public');
 
-// صورة PNG بسيطة (1x1 بكسل) مشفرة بـ Base64 لتعمل كعنصر نائب
-const placeholderImage = Buffer.from(
-  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
-  'base64'
-);
+// التأكد من وجود مجلد public
+if (!fs.existsSync(publicDir)) {
+  fs.mkdirSync(publicDir, { recursive: true });
+}
 
-const rootDir = path.join(__dirname, '..');
-const publicDir = path.join(rootDir, 'public');
-const assetsDir = path.join(rootDir, 'assets');
-
-console.log('Checking assets...');
-
-// تأكد من وجود المجلدات
-ensureDir(publicDir);
-ensureDir(assetsDir);
-
-// قائمة الملفات المطلوبة لنجاح البناء
-const requiredFiles = [
-  { path: path.join(publicDir, 'icon.png'), content: placeholderImage },
-  { path: path.join(publicDir, 'icon.ico'), content: placeholderImage }, // مجرد ملف مؤقت
-  { path: path.join(assetsDir, 'icon.png'), content: placeholderImage },
-  { path: path.join(assetsDir, 'splash.png'), content: placeholderImage }
+// قائمة بالصور المستخدمة في التطبيق لتوليد بدائل لها
+const assets = [
+  'map_bin_nur.png',
+  'map_socotra.png',
+  'earth_texture.jpg',
+  'map_political.png',
+  'map_hattin.png',
+  'map_mongol.png',
+  'map_ain_jalut.png',
+  'map_nabhanid.png',
+  'map_trade_routes.png',
+  'img_al_aqr.png',
+  'img_arch_civil.png',
+  'img_arch_military.png',
+  'arabesque_pattern.png',
+  'oman_emblem.png',
+  'stardust_pattern.png',
+  'soil_pattern.png',
+  'icon.png'
 ];
 
-// إنشاء الملفات إذا كانت مفقودة
-requiredFiles.forEach(file => {
-  if (!fs.existsSync(file.path)) {
-    fs.writeFileSync(file.path, file.content);
-    console.log(`Created placeholder asset: ${file.path}`);
+// صورة عنصر نائب (Placeholder) عبارة عن 1x1 بكسل رمادي
+const placeholderData = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=';
+const placeholderBuffer = Buffer.from(placeholderData, 'base64');
+
+console.log('Checking and generating placeholder assets...');
+
+assets.forEach(asset => {
+  const filePath = path.join(publicDir, asset);
+  if (!fs.existsSync(filePath)) {
+    try {
+      fs.writeFileSync(filePath, placeholderBuffer);
+      console.log(`Generated placeholder for: ${asset}`);
+    } catch (err) {
+      console.error(`Error creating ${asset}:`, err);
+    }
   }
 });
 
