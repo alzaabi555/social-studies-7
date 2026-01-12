@@ -1,5 +1,7 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
+
+const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -7,33 +9,32 @@ function createWindow() {
     height: 800,
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
-      nodeIntegration: false,
       contextIsolation: true,
-    },
+      nodeIntegration: false,
+      sandbox: true
+    }
   });
 
-  // في بيئة التطوير
-  if (process.env.NODE_ENV === 'development') {
+  if (isDev) {
     win.loadURL('http://localhost:5173');
   } else {
-    // في بيئة الإنتاج (بعد البناء)
-    // يفترض وجود ملف index.html في مجلد dist
-    win.loadFile(path.join(__dirname, '../dist/index.html')); 
+    // في الإنتاج، يحمل الملف الذي تم بناؤه
+    win.loadFile(path.join(__dirname, '../dist/index.html'));
   }
 }
 
 app.whenReady().then(() => {
   createWindow();
-
   app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) {
-      createWindow();
-    }
+    if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
 });
 
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit();
-  }
+  if (process.platform !== 'darwin') app.quit();
+});
+
+ipcMain.on('toMain', (event, args) => {
+  console.log(args);
+  event.sender.send('fromMain', 'تم الاستلام');
 });
