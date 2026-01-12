@@ -1,42 +1,83 @@
-name: Build App
+
+name: Build App (Windows & Android)
 
 on:
   push:
     branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
 
 jobs:
-  build:
+  build-windows:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 20
-      - run: npm install
-      - run: npm run build
-      
-      # بناء الويندوز
-      - run: npm run electron:build
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Ensure Assets
+        run: npm run ensure-assets
+
+      - name: Build React App
+        run: npm run build
+
+      - name: Build Electron App (Windows .exe)
+        run: npm run electron:build
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      
-      # رفع ملف الويندوز
-      - uses: actions/upload-artifact@v4
+
+      - name: Upload Windows Artifact
+        uses: actions/upload-artifact@v4
         with:
           name: windows-app
           path: release/*.exe
 
-      # إعداد وبناء الأندرويد
-      - uses: actions/setup-java@v4
+  build-android:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '17'
-      - run: npx cap add android || true
-      - run: npx cap sync
-      - run: cd android && ./gradlew assembleDebug
-      
-      # رفع ملف الأندرويد
-      - uses: actions/upload-artifact@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Ensure Assets
+        run: npm run ensure-assets
+
+      - name: Build React App
+        run: npm run build
+
+      - name: Initialize Capacitor Android
+        run: |
+          npx cap add android
+          npx cap sync
+
+      - name: Build Android APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: Upload Android Artifact
+        uses: actions/upload-artifact@v4
         with:
           name: android-app
           path: android/app/build/outputs/apk/debug/app-debug.apk
