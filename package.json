@@ -3,6 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
+  "main": "electron/main.cjs",
   "description": "الكتاب التفاعلي لمنهج السابع - دراسات اجتماعية",
   "author": "Mohammed Darwish",
   "scripts": {
@@ -10,6 +11,8 @@
     "build": "tsc && vite build",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
+    "electron:dev": "concurrently -k \"cross-env BROWSER=none npm run dev\" \"wait-on http://localhost:5173 && electron . --dev\"",
+    "electron:build": "npm run build && electron-builder",
     "generate-icons": "capacitor-assets generate --android"
   },
   "dependencies": {
@@ -18,7 +21,8 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "@capacitor/core": "^5.7.0",
-    "@capacitor/android": "^5.7.0"
+    "@capacitor/android": "^5.7.0",
+    "electron-squirrel-startup": "^1.0.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.64",
@@ -27,6 +31,8 @@
     "@typescript-eslint/parser": "^7.1.1",
     "@vitejs/plugin-react": "^4.2.1",
     "autoprefixer": "^10.4.18",
+    "electron": "^29.1.0",
+    "electron-builder": "^24.13.3",
     "eslint": "^8.57.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
@@ -34,7 +40,40 @@
     "tailwindcss": "^3.4.1",
     "typescript": "^5.2.2",
     "vite": "^5.1.4",
+    "concurrently": "^8.2.2",
+    "cross-env": "^7.0.3",
+    "wait-on": "^7.2.0",
     "@capacitor/cli": "^5.7.0",
     "@capacitor/assets": "^3.0.0"
+  },
+  "build": {
+    "appId": "com.oman.socialstudies",
+    "productName": "الكتاب التفاعلي",
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/main.cjs",
+      "package.json"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "public/icon.png",
+      "legalTrademarks": "Mohammed Darwish"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "الكتاب التفاعلي",
+      "artifactName": "interactive-book-setup.${ext}",
+      "language": 1025,
+      "runAfterFinish": true,
+      "deleteAppDataOnUninstall": true
+    }
   }
 }
