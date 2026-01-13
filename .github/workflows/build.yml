@@ -1,48 +1,156 @@
-name: Build App (Android)
+name: Build Apps
 
 on:
   push:
-    branches: [ main, master ]
-  pull_request:
-    branches: [ main, master ]
+    branches: [ main ]
+  workflow_dispatch:
 
 jobs:
-  build-android:
-    runs-on: ubuntu-latest
+  build-desktop:
+    runs-on: windows-latest
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'zulu'
-          java-version: '17'
-
+      - uses: actions/checkout@v4
+      
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          
+      - name: Install Dependencies
+        run: npm install
+        
+      - name: Build Electron App (Windows .exe)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          API_KEY: ${{ secrets.API_KEY }} 
+        run: npm run electron:build
+        
+      - name: Upload Windows Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: social-studies-7-Windows-Installer
+          path: release/*.exe
 
+  build-android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          
       - name: Install Dependencies
         run: npm install
 
-      - name: Build React App
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Build Web Assets
+        env:
+          API_KEY: ${{ secrets.API_KEY }}
         run: npm run build
 
-      - name: Initialize Capacitor Android
+      - name: Setup Capacitor Android
         run: |
-          npx cap add android
-          npx cap sync
+          npx cap add android || true
+      
+      - name: Ensure Assets Exist
+        run: |
+          mkdir -p assets
+          # If user forgot to put icon in assets, take from public
+          if [ ! -f assets/icon.png ] && [ -f public/icon.png ]; then
+            echo "Copying icon from public to assets..."
+            cp public/icon.png assets/icon.png
+          fi
+          # If user has no splash, use icon as splash
+          if [ ! -f assets/splash.png ] && [ -f assets/icon.png ]; then
+            echo "Creating splash from icon..."
+            cp assets/icon.png assets/splash.png
+          fi
+
+      - name: Generate Icons
+        run: npx capacitor-assets generate --android
+
+      - name: Sync Capacitor
+        run: npx cap sync android
 
       - name: Build Android APK
         run: |
           cd android
-          chmod +x gradlew
           ./gradlew assembleDebug
 
-      - name: Upload Android Artifact
+      - name: Upload Android APK
         uses: actions/upload-artifact@v4
         with:
-          name: android-app
+          name: social-studies-7-Android-APK
           path: android/app/build/outputs/apk/debug/app-debug.apk
+
+  build-ios:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Build Web Assets
+        env:
+          API_KEY: ${{ secrets.API_KEY }}
+        run: npm run build
+
+      - name: Setup Capacitor iOS
+        run: |
+          npx cap add ios || true
+
+      - name: Ensure Assets Exist
+        run: |
+          mkdir -p assets
+          # If user forgot to put icon in assets, take from public
+          if [ ! -f assets/icon.png ] && [ -f public/icon.png ]; then
+            echo "Copying icon from public to assets..."
+            cp public/icon.png assets/icon.png
+          fi
+          # If user has no splash, use icon as splash
+          if [ ! -f assets/splash.png ] && [ -f assets/icon.png ]; then
+            echo "Creating splash from icon..."
+            cp assets/icon.png assets/splash.png
+          fi
+
+      - name: Generate Icons
+        run: npx capacitor-assets generate --ios
+
+      - name: Sync Capacitor
+        run: npx cap sync ios
+
+      - name: Build Unsigned IPA (For AltStore)
+        run: |
+          cd ios/App
+          xcodebuild -workspace App.xcworkspace \
+            -scheme App \
+            -configuration Release \
+            -destination generic/platform=iOS \
+            -derivedDataPath dd \
+            clean build \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO
+            
+          mkdir Payload
+          cp -r dd/Build/Products/Release-iphoneos/App.app Payload/
+          zip -r Muhawil-Pro.ipa Payload
+
+      - name: Upload iOS IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: social-studies-7-iOS-IPA
+          path: ios/App/social-studies-7-Pro.ipa
