@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { GoogleGenAI, LiveServerMessage, Modality } from '@google/genai';
-import { Mic, MicOff, X, Volume2, WifiOff } from 'lucide-react';
-import { base64ToUint8Array, createPCMBlob, decodeAudioData } from '../services/audioUtils';
+import { Mic, MicOff, X, Volume2, WifiOff, Sparkles } from 'lucide-react';
+import { createPCMBlob, decodeAudioData } from '../services/audioUtils';
 
-interface LiveVoiceTutorProps {
+export interface LiveVoiceTutorProps {
   onClose?: () => void;
   context?: string;
 }
@@ -14,12 +14,54 @@ const LiveVoiceTutor: React.FC<LiveVoiceTutorProps> = ({ onClose, context = "ا�
   const [error, setError] = useState<string | null>(null);
   
   const audioContextRef = useRef<AudioContext | null>(null);
+  const inputAudioContextRef = useRef<AudioContext | null>(null);
   const inputSourceRef = useRef<MediaStreamAudioSourceNode | null>(null);
   const processorRef = useRef<ScriptProcessorNode | null>(null);
   const outputNodeRef = useRef<GainNode | null>(null);
   const nextStartTimeRef = useRef<number>(0);
   const sourcesRef = useRef<Set<AudioBufferSourceNode>>(new Set());
   const sessionRef = useRef<Promise<any> | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+
+  const disconnect = () => {
+    if (sessionRef.current) {
+        sessionRef.current.then(session => {
+            try {
+                session.close();
+            } catch (e) {
+                console.error("Error closing session", e);
+            }
+        });
+        sessionRef.current = null;
+    }
+
+    if (processorRef.current) {
+        processorRef.current.disconnect();
+        processorRef.current = null;
+    }
+    
+    if (inputSourceRef.current) {
+        inputSourceRef.current.disconnect();
+        inputSourceRef.current = null;
+    }
+
+    if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+        streamRef.current = null;
+    }
+
+    if (inputAudioContextRef.current) {
+        inputAudioContextRef.current.close();
+        inputAudioContextRef.current = null;
+    }
+
+    if (audioContextRef.current) {
+        audioContextRef.current.close();
+        audioContextRef.current = null;
+    }
+    
+    setIsConnected(false);
+  };
 
   useEffect(() => {
     connectToGemini();
@@ -33,162 +75,170 @@ const LiveVoiceTutor: React.FC<LiveVoiceTutorProps> = ({ onClose, context = "ا�
 
       const ai = new GoogleGenAI({ apiKey });
       
+      // Setup Audio Output
       audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
       outputNodeRef.current = audioContextRef.current.createGain();
       outputNodeRef.current.connect(audioContextRef.current.destination);
 
+      // Setup Audio Input
       const stream = await navigator.mediaDevices.getUserMedia({ 
         audio: { sampleRate: 16000, channelCount: 1, echoCancellation: true }
       });
+      streamRef.current = stream;
 
       const inputAudioContext = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 16000 });
-      inputSourceRef.current = inputAudioContext.createMediaStreamSource(stream);
-      processorRef.current = inputAudioContext.createScriptProcessor(4096, 1, 1);
-
-      const config = {
+      inputAudioContextRef.current = inputAudioContext;
+      
+      const sessionPromise = ai.live.connect({
         model: 'gemini-2.5-flash-native-audio-preview-12-2025',
         config: {
-          responseModalities: [Modality.AUDIO],
-          speechConfig: {
-            voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Zephyr' } },
-          },
-          systemInstruction: `أنت معلم دراسات اجتماعية عماني خبير ومرح، اسمك "الأستاذ ناصر".
-          تتحدث مع طالب في الصف السابع في سلطنة عمان.
-          الموضوع الحالي هو: ${context}.
-          تحدث بلهجة عربية فصحى سهلة ومحببة مع بعض المفردات العمانية اللطيفة.
-          دورك هو شرح المفاهيم، طرح أسئلة مثيرة للتفكير، وتشجيع الطالب.
-          اجعل إجاباتك قصيرة (جملتين أو ثلاث) ليكون حواراً وليس محاضرة.`,
+            responseModalities: [Modality.AUDIO],
+            speechConfig: {
+                voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Zephyr' } }
+            },
+            systemInstruction: `
+                أنت "المعلم الذكي" لمادة الدراسات الاجتماعية (الصف السابع - سلطنة عمان).
+                تحدث باللغة العربية بلهجة ودودة ومشجعة.
+                السياق الحالي للطالب هو: ${context}.
+                كن موجزاً في إجاباتك، وشجع الطالب على التفكير.
+                إذا سألك الطالب عن موضوع خارج الدرس، لبه بذكاء ثم عد للموضوع.
+            `,
         },
-      };
-
-      const sessionPromise = ai.live.connect({
-        model: config.model,
-        config: config.config,
         callbacks: {
-          onopen: () => {
-            console.log("Connected to Gemini Live");
-            setIsConnected(true);
-            
-            processorRef.current!.onaudioprocess = (e) => {
-                const inputData = e.inputBuffer.getChannelData(0);
-                const pcmBlob = createPCMBlob(inputData, 16000);
-                sessionPromise.then(session => {
-                    session.sendRealtimeInput({ media: { mimeType: pcmBlob.mimeType, data: pcmBlob.data } });
-                });
-            };
-            
-            inputSourceRef.current!.connect(processorRef.current!);
-            processorRef.current!.connect(inputAudioContext.destination);
-          },
-          onmessage: async (msg: LiveServerMessage) => {
-            const audioData = msg.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
-            if (audioData) {
-               setIsTalking(true);
-               if (audioContextRef.current && outputNodeRef.current) {
-                   const audioBuffer = await decodeAudioData(
-                       base64ToUint8Array(audioData),
-                       audioContextRef.current,
-                       24000
-                   );
-                   playAudio(audioBuffer);
-               }
+            onopen: () => {
+                setIsConnected(true);
+                // Setup Input processing
+                inputSourceRef.current = inputAudioContext.createMediaStreamSource(stream);
+                processorRef.current = inputAudioContext.createScriptProcessor(4096, 1, 1);
+                
+                processorRef.current.onaudioprocess = (e) => {
+                    const inputData = e.inputBuffer.getChannelData(0);
+                    const pcmBlob = createPCMBlob(inputData, 16000); 
+                    
+                    sessionPromise.then((session) => {
+                        session.sendRealtimeInput({ media: pcmBlob });
+                    });
+                };
+
+                inputSourceRef.current.connect(processorRef.current);
+                processorRef.current.connect(inputAudioContext.destination);
+            },
+            onmessage: async (message: LiveServerMessage) => {
+                // Handle Audio Output
+                const base64Audio = message.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
+                if (base64Audio) {
+                    setIsTalking(true);
+                    if (audioContextRef.current && outputNodeRef.current) {
+                        const currentTime = audioContextRef.current.currentTime;
+                        if (nextStartTimeRef.current < currentTime) {
+                            nextStartTimeRef.current = currentTime;
+                        }
+
+                        try {
+                            const audioBytes = Uint8Array.from(atob(base64Audio), c => c.charCodeAt(0));
+                            const audioBuffer = await decodeAudioData(audioBytes, audioContextRef.current, 24000);
+                            
+                            const source = audioContextRef.current.createBufferSource();
+                            source.buffer = audioBuffer;
+                            source.connect(outputNodeRef.current);
+                            
+                            source.start(nextStartTimeRef.current);
+                            nextStartTimeRef.current += audioBuffer.duration;
+                            
+                            source.onended = () => {
+                                sourcesRef.current.delete(source);
+                                if (sourcesRef.current.size === 0) {
+                                    setIsTalking(false);
+                                }
+                            };
+                            sourcesRef.current.add(source);
+                        } catch (decodeErr) {
+                            console.error("Audio decode error", decodeErr);
+                        }
+                    }
+                }
+
+                // Handle Interruption
+                if (message.serverContent?.interrupted) {
+                    sourcesRef.current.forEach(source => {
+                        try { source.stop(); } catch(e) {}
+                    });
+                    sourcesRef.current.clear();
+                    nextStartTimeRef.current = 0;
+                    setIsTalking(false);
+                }
+            },
+            onclose: () => {
+                setIsConnected(false);
+            },
+            onerror: (err) => {
+                console.error("Live API Error:", err);
+                setError("حدث خطأ في الاتصال");
+                setIsConnected(false);
             }
-            if (msg.serverContent?.turnComplete) {
-                setIsTalking(false);
-            }
-          },
-          onclose: () => setIsConnected(false),
-          onerror: (err) => {
-            console.error(err);
-            setError("انقطع الاتصال");
-            setIsConnected(false);
-          }
         }
       });
+      
       sessionRef.current = sessionPromise;
-    } catch (e) {
-      console.error(e);
-      setError("تعذر الوصول للميكروفون");
+
+    } catch (e: any) {
+      console.error("Connection failed", e);
+      let errorMessage = "تعذر الوصول للميكروفون أو الاتصال بالخادم";
+      if (e.name === 'NotAllowedError' || e.message?.includes('Permission denied')) {
+        errorMessage = "يرجى السماح بالوصول للميكروفون لاستخدام المعلم الذكي.";
+      }
+      setError(errorMessage);
     }
   };
 
-  const playAudio = (buffer: AudioBuffer) => {
-      if (!audioContextRef.current || !outputNodeRef.current) return;
-      const source = audioContextRef.current.createBufferSource();
-      source.buffer = buffer;
-      source.connect(outputNodeRef.current);
-      
-      const currentTime = audioContextRef.current.currentTime;
-      if (nextStartTimeRef.current < currentTime) nextStartTimeRef.current = currentTime;
-      
-      source.start(nextStartTimeRef.current);
-      nextStartTimeRef.current += buffer.duration;
-      source.onended = () => {
-          sourcesRef.current.delete(source);
-          if (sourcesRef.current.size === 0) setIsTalking(false);
-      };
-      sourcesRef.current.add(source);
-  };
-
-  const disconnect = () => {
-      if (sessionRef.current) sessionRef.current.then(s => s.close());
-      if (processorRef.current) { processorRef.current.disconnect(); processorRef.current.onaudioprocess = null; }
-      if (inputSourceRef.current) inputSourceRef.current.disconnect();
-      sourcesRef.current.forEach(s => s.stop());
-      sourcesRef.current.clear();
-      if (audioContextRef.current) audioContextRef.current.close();
-      setIsConnected(false);
-  };
-
   return (
-    <div className="fixed bottom-6 left-6 z-50 animate-slide-up">
-      <div className="bg-slate-900 text-white rounded-3xl shadow-2xl p-5 w-72 border border-indigo-500/50 flex flex-col gap-4 relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-purple-500/10 pointer-events-none"></div>
-          
-          <div className="flex justify-between items-center z-10">
-              <div className="flex items-center gap-2">
-                  <div className={`w-3 h-3 rounded-full ${isConnected ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></div>
-                  <span className="font-bold text-sm">المعلم الذكي (الأستاذ ناصر)</span>
-              </div>
-              <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors bg-white/10 p-1 rounded-full">
-                  <X size={16} />
-              </button>
-          </div>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in">
+        <div className="bg-white rounded-3xl p-8 w-full max-w-md shadow-2xl relative border-4 border-indigo-100 flex flex-col items-center">
+            
+            <button onClick={onClose} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 p-2 bg-slate-100 rounded-full">
+                <X size={20} />
+            </button>
 
-          <div className="flex flex-col items-center py-2 z-10">
-              {error ? (
-                  <div className="text-red-400 text-center text-xs flex flex-col items-center gap-2">
-                      <WifiOff size={24} />
-                      <p>{error}</p>
-                  </div>
-              ) : (
-                  <div className={`relative w-24 h-24 flex items-center justify-center rounded-full transition-all duration-300 ${isTalking ? 'bg-indigo-600 scale-110 shadow-[0_0_40px_rgba(79,70,229,0.6)]' : 'bg-slate-800 border-2 border-slate-700'}`}>
-                      {isTalking ? (
-                          <Volume2 size={40} className="animate-bounce text-white" />
-                      ) : (
-                          <div className="flex gap-1 items-end h-8">
-                              <div className="w-1 bg-indigo-400 animate-[music_1s_ease-in-out_infinite] h-4"></div>
-                              <div className="w-1 bg-indigo-400 animate-[music_1.2s_ease-in-out_infinite] h-8"></div>
-                              <div className="w-1 bg-indigo-400 animate-[music_0.8s_ease-in-out_infinite] h-6"></div>
-                          </div>
-                      )}
-                  </div>
-              )}
-          </div>
+            <div className="mb-6 bg-indigo-50 p-4 rounded-full border-4 border-indigo-100">
+                {error ? (
+                    <WifiOff size={48} className="text-red-500" />
+                ) : isTalking ? (
+                    <Volume2 size={48} className="text-indigo-600 animate-pulse" />
+                ) : (
+                    <div className="relative">
+                        <Mic size={48} className={isConnected ? "text-indigo-600" : "text-slate-400"} />
+                        {isConnected && <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                        </span>}
+                    </div>
+                )}
+            </div>
 
-          <div className="text-center z-10">
-              <p className="text-xs text-slate-300 mb-3 bg-slate-800/50 p-2 rounded-lg">
-                  {isTalking ? "يستمع إليك..." : "تحدث الآن، أنا أستمع..."}
-              </p>
-              <button 
-                onClick={onClose}
-                className="w-full bg-red-500/10 hover:bg-red-500/20 text-red-200 border border-red-500/30 py-2 rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-2"
-              >
-                  <MicOff size={14} /> إنهاء الحصة الصوتية
-              </button>
-          </div>
-      </div>
-      <style>{`@keyframes music { 0%, 100% { height: 10px; } 50% { height: 30px; } }`}</style>
+            <h2 className="text-2xl font-black text-slate-800 mb-2">المعلم الذكي المباشر</h2>
+            
+            {error ? (
+                <div className="text-center">
+                    <p className="text-red-500 font-bold mb-4 text-sm">{error}</p>
+                    <button onClick={() => { setError(null); connectToGemini(); }} className="px-6 py-2 bg-indigo-600 text-white rounded-full font-bold hover:bg-indigo-700 transition-colors">
+                        إعادة المحاولة
+                    </button>
+                </div>
+            ) : (
+                <div className="text-center space-y-4 w-full">
+                    {!isConnected ? (
+                        <p className="text-slate-500 animate-pulse">جاري الاتصال...</p>
+                    ) : (
+                        <>
+                            <div className="flex items-center justify-center gap-2 text-indigo-600 font-medium bg-indigo-50 py-2 px-4 rounded-lg">
+                                <Sparkles size={16} />
+                                <span>{isTalking ? "المعلم يتحدث..." : "أستمع إليك..."}</span>
+                            </div>
+                        </>
+                    )}
+                </div>
+            )}
+        </div>
     </div>
   );
 };

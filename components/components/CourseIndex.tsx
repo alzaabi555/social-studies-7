@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { UNITS } from '../constants';
-import { Lock, ChevronLeft, LayoutGrid, List, Briefcase, History, PlayCircle, UserCog, Save, School } from 'lucide-react';
+import { UNITS, UNITS_SIXTH } from '../constants';
+import { Lock, ChevronLeft, LayoutGrid, List, Briefcase, History, PlayCircle, UserCog, Save, School, GraduationCap } from 'lucide-react';
 import { LessonId, Lesson } from '../types';
 
 interface CourseIndexProps {
@@ -9,6 +9,7 @@ interface CourseIndexProps {
 
 const CourseIndex: React.FC<CourseIndexProps> = ({ onSelectLesson }) => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [activeGrade, setActiveGrade] = useState<6 | 7>(7);
   const [greeting, setGreeting] = useState('');
   
   // --- State for Teacher Data & Progress ---
@@ -25,10 +26,12 @@ const CourseIndex: React.FC<CourseIndexProps> = ({ onSelectLesson }) => {
     const savedName = localStorage.getItem('teacherName');
     const savedSchool = localStorage.getItem('schoolName');
     const savedLastLesson = localStorage.getItem('lastLessonId');
+    const savedGrade = localStorage.getItem('activeGrade');
 
     if (savedName) setTeacherName(savedName);
     if (savedSchool) setSchoolName(savedSchool);
     if (savedLastLesson) setLastLessonId(savedLastLesson);
+    if (savedGrade) setActiveGrade(Number(savedGrade) as 6 | 7);
 
     // Time-based greeting
     const hour = new Date().getHours();
@@ -37,10 +40,19 @@ const CourseIndex: React.FC<CourseIndexProps> = ({ onSelectLesson }) => {
     else setGreeting('مساؤك سعيد');
   }, []);
 
+  const handleGradeChange = (grade: 6 | 7) => {
+      setActiveGrade(grade);
+      localStorage.setItem('activeGrade', String(grade));
+  };
+
+  // Select active units based on grade
+  const currentUnits = activeGrade === 6 ? UNITS_SIXTH : UNITS;
+
   // Helper to find lesson details by ID
   const getLastLessonDetails = (): Lesson | null => {
       if (!lastLessonId) return null;
-      for (const unit of UNITS) {
+      const allUnits = [...UNITS, ...UNITS_SIXTH];
+      for (const unit of allUnits) {
           const lesson = unit.lessons.find(l => l.id === lastLessonId);
           if (lesson) return lesson;
       }
@@ -66,8 +78,8 @@ const CourseIndex: React.FC<CourseIndexProps> = ({ onSelectLesson }) => {
   };
 
   // Calculate total stats
-  const totalLessons = UNITS.reduce((acc, unit) => acc + unit.lessons.length, 0);
-  const totalUnits = UNITS.length;
+  const totalLessons = currentUnits.reduce((acc, unit) => acc + unit.lessons.length, 0);
+  const totalUnits = currentUnits.length;
 
   return (
     <div className="min-h-screen bg-slate-50 text-right font-tajawal pb-20 select-none" dir="rtl">
@@ -210,7 +222,9 @@ const CourseIndex: React.FC<CourseIndexProps> = ({ onSelectLesson }) => {
                       </div>
                       <h2 className="text-4xl md:text-5xl font-black mb-4 leading-tight">
                           مادة الدراسات الاجتماعية <br/>
-                          <span className="text-indigo-300">للصف السابع</span>
+                          <span className="text-indigo-300">
+                              {activeGrade === 6 ? 'للصف السادس' : 'للصف السابع'}
+                          </span>
                       </h2>
                       <div className="flex gap-4 mt-2 text-indigo-200 text-sm font-medium">
                           <span className="bg-white/10 px-3 py-1 rounded-lg flex items-center gap-2"><Briefcase size={16}/> الفصل الدراسي الثاني</span>
@@ -234,9 +248,29 @@ const CourseIndex: React.FC<CourseIndexProps> = ({ onSelectLesson }) => {
           </div>
       </div>
 
-      {/* --- Course Content --- */}
+      {/* --- Grade Selector & Course Content --- */}
       <main className="max-w-6xl mx-auto px-6 py-10 -mt-8 relative z-20">
           
+          {/* Grade Selector Tabs */}
+          <div className="flex justify-center mb-8">
+              <div className="bg-white p-1.5 rounded-2xl shadow-lg border border-indigo-100 flex gap-1">
+                  <button 
+                      onClick={() => handleGradeChange(6)}
+                      className={`px-8 py-3 rounded-xl font-bold flex items-center gap-2 transition-all duration-300 ${activeGrade === 6 ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 hover:bg-slate-50'}`}
+                  >
+                      <GraduationCap size={20} />
+                      الصف السادس
+                  </button>
+                  <button 
+                      onClick={() => handleGradeChange(7)}
+                      className={`px-8 py-3 rounded-xl font-bold flex items-center gap-2 transition-all duration-300 ${activeGrade === 7 ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 hover:bg-slate-50'}`}
+                  >
+                      <GraduationCap size={20} />
+                      الصف السابع
+                  </button>
+              </div>
+          </div>
+
           {/* View Toggle */}
           <div className="flex justify-end mb-6">
               <div className="bg-white p-1 rounded-lg shadow-sm border border-slate-200 flex">
@@ -257,7 +291,7 @@ const CourseIndex: React.FC<CourseIndexProps> = ({ onSelectLesson }) => {
 
           {/* Units Loop */}
           <div className="space-y-12">
-              {UNITS.map((unit) => (
+              {currentUnits.length > 0 ? currentUnits.map((unit) => (
                   <section key={unit.id} className="animate-slide-up">
                       <div className="flex items-center gap-4 mb-6">
                           <div className="h-10 w-2 bg-indigo-600 rounded-full"></div>
@@ -327,7 +361,11 @@ const CourseIndex: React.FC<CourseIndexProps> = ({ onSelectLesson }) => {
                           ))}
                       </div>
                   </section>
-              ))}
+              )) : (
+                  <div className="text-center py-20">
+                      <p className="text-slate-400 text-xl">لا توجد وحدات متاحة لهذا الصف حالياً.</p>
+                  </div>
+              )}
           </div>
       </main>
     </div>

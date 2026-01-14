@@ -68,7 +68,7 @@ const StateInstitutionsLesson: React.FC<StateInstitutionsLessonProps> = ({ onBac
         {/* Footer */}
         <div className="p-4 border-t border-cyan-100 bg-cyan-50/50 text-center">
             <p className="text-sm font-black text-slate-700 mb-2">أ. محمد درويش الزعابي</p>
-            <div className="flex items-center justify-center gap-2 text-slate-500 bg-white py-1 px-3 rounded-full border border-slate-200 text-xs font-mono shadow-sm mx-auto w-fit">
+            <div className="flex items-center justify-center gap-2 text-slate-500 bg-white py-1 px-3 rounded-full border border-cyan-200 text-xs font-mono shadow-sm mx-auto w-fit">
                 <Phone size={12} />
                 <span dir="ltr">98344555</span>
             </div>

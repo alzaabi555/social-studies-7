@@ -107,218 +107,201 @@ const SectionElements: React.FC = () => {
                               <line x1="0" y1="0" x2="0" y2="60" stroke="#475569" strokeWidth="4" />
                               <line x1="0" y1="0" x2="0" y2="-60" stroke="#475569" strokeWidth="4" />
                               
-                              <circle cx="60" cy="0" r="15" fill="#EF4444" />
-                              <circle cx="-60" cy="0" r="15" fill="#3B82F6" />
-                              <circle cx="0" cy="60" r="15" fill="#3B82F6" />
-                              <circle cx="0" cy="-60" r="15" fill="#3B82F6" />
+                              <circle cx="60" cy="0" r="10" fill="#EF4444" />
+                              <circle cx="-60" cy="0" r="10" fill="#3B82F6" />
+                              <circle cx="0" cy="60" r="10" fill="#3B82F6" />
+                              <circle cx="0" cy="-60" r="10" fill="#3B82F6" />
                           </g>
                           <circle cx="0" cy="0" r="5" fill="#1E293B" />
-                          <rect x="-2" y="0" width="4" height="100" fill="#475569" />
+                          <rect x="-2" y="0" width="4" height="100" fill="#64748B" />
                       </g>
-
-                      {/* Wind Lines */}
-                      {labValue > 10 && (
-                          <path d="M50,50 H350" stroke="#94A3B8" strokeWidth="2" strokeDasharray="10 20" style={{ animation: `dash ${speedDuration}s linear infinite` }} />
-                      )}
+                      
+                      <text x="20" y="180" fill="#475569" fontSize="14" fontWeight="bold">
+                          السرعة: {labValue} عقدة
+                      </text>
                   </svg>
               );
 
           case 'humidity':
+              // Lab Value = Humidity % (Cloudiness / Droplets)
               return (
-                   <svg viewBox="0 0 400 200" className="w-full h-full" preserveAspectRatio="xMidYMid slice">
-                      <rect width="400" height="200" fill="#E0F2FE" />
-                      {/* Water droplets - Scale based on Lab Value */}
-                      {/* Added transformBox/Origin for better scaling stability */}
-                      <g 
-                        style={{ transformBox: 'fill-box', transformOrigin: 'center' }}
-                        transform={`scale(${0.5 + labValue/100}) translate(${200 - (labValue)}, ${100 - (labValue/2)})`} 
-                        className="transition-transform duration-500 origin-center"
-                      >
-                          <path d="M100,100 Q100,80 110,80 Q120,80 120,100 Q120,120 110,120 Q100,120 100,100" fill="#38BDF8" />
-                          <path d="M150,80 Q150,60 160,60 Q170,60 170,80 Q170,100 160,100 Q150,100 150,80" fill="#38BDF8" />
+                  <svg viewBox="0 0 400 200" className="w-full h-full" preserveAspectRatio="xMidYMid slice">
+                      <rect width="400" height="200" fill={labValue > 80 ? "#94A3B8" : "#BFDBFE"} className="transition-colors duration-500" />
+                      
+                      {/* Sun (hidden if humid) */}
+                      <circle cx="350" cy="50" r="30" fill="#FDE047" opacity={1 - (labValue/100)} className="transition-opacity duration-500" />
+
+                      {/* Clouds */}
+                      <path d="M50,100 Q70,80 90,100 T130,100 T170,100" fill="none" stroke="white" strokeWidth="20" strokeLinecap="round" opacity={labValue/100} />
+                      <path d="M200,80 Q220,60 240,80 T280,80 T320,80" fill="none" stroke="white" strokeWidth="30" strokeLinecap="round" opacity={labValue/100} />
+
+                      {/* Hygrometer Needle */}
+                      <g transform="translate(200, 150)">
+                          <path d="M-50,0 A50,50 0 0,1 50,0" fill="none" stroke="#1E293B" strokeWidth="4" />
+                          <line x1="0" y1="0" x2="0" y2="-40" stroke="#DC2626" strokeWidth="3" transform={`rotate(${(labValue * 1.8) - 90})`} className="transition-transform duration-300" />
+                          <circle cx="0" cy="0" r="5" fill="#1E293B" />
                       </g>
-                      <text x="20" y="180" fill="#0369A1" fontSize="14">حرك المؤشر لزيادة بخار الماء</text>
+                      
+                      <text x="30" y="180" fill="#1E3A8A" fontSize="14" fontWeight="bold">
+                          رطوبة: {labValue}%
+                      </text>
                   </svg>
               );
 
           case 'precipitation':
-              // isActive = Raining or not
+              // Lab Value = Rain amount (mm)
               return (
                   <svg viewBox="0 0 400 200" className="w-full h-full" preserveAspectRatio="xMidYMid slice">
-                      <rect width="400" height="200" fill={isActive ? "#334155" : "#94A3B8"} className="transition-colors duration-1000" />
+                      <rect width="400" height="200" fill="#334155" />
                       
-                      {/* Cloud */}
-                      <path d="M100,60 Q130,20 180,60 T280,60 T350,60" fill="none" stroke="white" strokeWidth="40" strokeLinecap="round" />
-                      
-                      {/* Rain Drops */}
+                      {/* Rain Gauge */}
+                      <g transform="translate(180, 50)">
+                          <rect x="0" y="0" width="40" height="120" fill="#E2E8F0" stroke="#94A3B8" strokeWidth="2" />
+                          {/* Water Level */}
+                          <rect 
+                            x="2" 
+                            y={120 - labValue} 
+                            width="36" 
+                            height={labValue} 
+                            fill="#3B82F6" 
+                            opacity="0.8"
+                            className="transition-all duration-300"
+                          />
+                          {/* Marks */}
+                          <line x1="0" y1="30" x2="10" y2="30" stroke="#94A3B8" />
+                          <line x1="0" y1="60" x2="10" y2="60" stroke="#94A3B8" />
+                          <line x1="0" y1="90" x2="10" y2="90" stroke="#94A3B8" />
+                      </g>
+
+                      {/* Falling Rain Animation (CSS) */}
                       {isActive && (
-                          <g className="animate-rain">
-                              {Array.from({length: 10}).map((_, i) => (
-                                  <line key={i} x1={120 + i*20} y1="80" x2={110 + i*20} y2="100" stroke="#60A5FA" strokeWidth="2" 
-                                        style={{ animation: `fall ${0.5 + Math.random()}s linear infinite` }} />
+                          <g className="animate-[rain_1s_linear_infinite]">
+                              {Array.from({length: 20}).map((_, i) => (
+                                  <line 
+                                    key={i} 
+                                    x1={Math.random() * 400} 
+                                    y1={Math.random() * -100} 
+                                    x2={Math.random() * 400} 
+                                    y2={Math.random() * 200} 
+                                    stroke="#60A5FA" 
+                                    strokeWidth="2" 
+                                    opacity="0.6"
+                                  />
                               ))}
                           </g>
                       )}
+                      
+                      <text x="240" y="150" fill="white" fontSize="14" fontWeight="bold">
+                          المطر: {labValue} ملم
+                      </text>
                   </svg>
               );
 
           default:
-              return <div className="bg-slate-200 w-full h-full"></div>;
+              return null;
       }
-  };
-
-  const renderControls = () => {
-      if (selectedElement.id === 'precipitation') {
-          return (
-              <button 
-                onClick={() => setIsActive(!isActive)}
-                className={`flex items-center gap-2 px-6 py-2 rounded-full font-bold shadow-md transition-all ${isActive ? 'bg-indigo-600 text-white' : 'bg-white text-indigo-600 border border-indigo-200'}`}
-              >
-                  <CloudRain size={20} />
-                  {isActive ? 'إيقاف المطر' : 'جعلها تمطر'}
-              </button>
-          );
-      }
-      
-      let label = "";
-      let icon = <Settings size={18} />;
-      
-      if (selectedElement.id === 'temp') { label = "تحكم في الحرارة"; icon = <ThermometerSun size={18}/>; }
-      else if (selectedElement.id === 'pressure') { label = "اضغط المكبس"; icon = <RefreshCw size={18}/>; }
-      else if (selectedElement.id === 'wind') { label = "سرعة الرياح"; icon = <Wind size={18}/>; }
-      else if (selectedElement.id === 'humidity') { label = "كمية البخار"; icon = <Settings size={18}/>; }
-
-      return (
-          <div className="flex items-center gap-4 w-full max-w-sm">
-              <span className="text-slate-500 font-bold text-sm whitespace-nowrap flex items-center gap-2">
-                  {icon} {label}
-              </span>
-              <input 
-                  type="range" 
-                  min="0" 
-                  max="100" 
-                  value={labValue} 
-                  onChange={(e) => setLabValue(Number(e.target.value))}
-                  className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-sky-600"
-              />
-          </div>
-      );
   };
 
   return (
-    <div className="p-4 md:p-6 animate-fade-in">
-      <div className="text-center mb-10">
+    <div className="flex flex-col gap-8 p-6 animate-fade-in">
+      
+      <div className="text-center mb-4">
         <h2 className="text-3xl font-black text-slate-800">عناصر الطقس وأدوات القياس</h2>
-        <p className="text-slate-500 mt-2">كيف يقيس علماء الأرصاد الجوية حالة الجو؟</p>
+        <p className="text-slate-500">مختبر الأرصاد الجوية: اختر عنصراً لتجربته</p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          
+          {/* Element Selection List */}
+          <div className="space-y-3 lg:col-span-1">
+              {WEATHER_ELEMENTS_DATA.map((el) => (
+                  <button
+                    key={el.id}
+                    onClick={() => setSelectedElement(el)}
+                    className={`w-full p-4 rounded-xl flex items-center justify-between border-2 transition-all duration-300 ${selectedElement.id === el.id ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg transform scale-105' : 'bg-white text-slate-600 border-slate-100 hover:border-indigo-200'}`}
+                  >
+                      <div className="flex items-center gap-3">
+                          <span className="text-2xl">{el.icon}</span>
+                          <div className="text-right">
+                              <div className="font-bold text-lg">{el.name}</div>
+                              <div className={`text-xs ${selectedElement.id === el.id ? 'text-indigo-200' : 'text-slate-400'}`}>الأداة: {el.instrument}</div>
+                          </div>
+                      </div>
+                      <div className="bg-white/20 p-2 rounded-full">
+                          <Settings size={18} />
+                      </div>
+                  </button>
+              ))}
+          </div>
+
+          {/* Interactive Lab Area */}
+          <div className="lg:col-span-2 space-y-6">
+              
+              {/* Simulation Box */}
+              <div className="bg-slate-900 rounded-3xl overflow-hidden shadow-2xl relative h-72 border-4 border-slate-800">
+                  {renderElementIllustration(selectedElement.id)}
+                  
+                  {/* Controls Overlay */}
+                  <div className="absolute bottom-0 left-0 right-0 bg-black/60 backdrop-blur-md p-4 flex items-center gap-4">
+                      <div className="text-white font-bold flex-shrink-0">تحكم في {selectedElement.name}:</div>
+                      <input 
+                        type="range" 
+                        min="0" 
+                        max="100" 
+                        value={labValue} 
+                        onChange={(e) => setLabValue(Number(e.target.value))}
+                        className="w-full h-2 bg-slate-600 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                      />
+                      {selectedElement.id === 'precipitation' && (
+                          <button 
+                            onClick={() => setIsActive(!isActive)}
+                            className={`p-2 rounded-full ${isActive ? 'bg-blue-500 text-white' : 'bg-slate-700 text-slate-400'}`}
+                          >
+                              <CloudRain />
+                          </button>
+                      )}
+                  </div>
+              </div>
+
+              {/* Info Cards */}
+              <div className="grid md:grid-cols-2 gap-4">
+                  <div className="bg-white p-5 rounded-2xl border border-indigo-100 shadow-sm">
+                      <div className="flex items-center gap-2 mb-2 text-indigo-700 font-bold">
+                          <Info size={20} /> التعريف والأهمية
+                      </div>
+                      <p className="text-sm text-slate-600 leading-relaxed mb-2">{selectedElement.definition}</p>
+                      <p className="text-xs text-slate-500 bg-indigo-50 p-2 rounded border border-indigo-100">{selectedElement.importance}</p>
+                  </div>
+
+                  <div className="bg-orange-50 p-5 rounded-2xl border border-orange-100 shadow-sm">
+                      <div className="flex items-center gap-2 mb-2 text-orange-700 font-bold">
+                          <Lightbulb size={20} /> في حياتنا اليومية
+                      </div>
+                      <p className="text-sm text-slate-700 leading-relaxed italic">"{selectedElement.realWorldExample}"</p>
+                      <div className="mt-3 flex items-center gap-2 text-xs font-bold text-orange-800">
+                          <span>وحدة القياس:</span>
+                          <span className="bg-white px-2 py-1 rounded shadow-sm">{selectedElement.unit}</span>
+                      </div>
+                  </div>
+              </div>
+
+              {/* Interactive Challenge - Icon cloneElement fixed here */}
+              <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl p-6 text-white flex items-center justify-between shadow-lg">
+                  <div>
+                      <h4 className="font-bold text-lg mb-1">هل تعلم؟</h4>
+                      <p className="text-indigo-100 text-sm max-w-md">{selectedElement.mechanism}</p>
+                  </div>
+                  <div className="bg-white/20 p-3 rounded-full animate-pulse">
+                      {React.cloneElement(selectedElement.icon as React.ReactElement<any>, { size: 32 })}
+                  </div>
+              </div>
+
+          </div>
       </div>
       
-      <div className="flex flex-col lg:flex-row gap-8">
-        
-        {/* Navigation / List */}
-        <div className="lg:w-1/4 flex flex-row lg:flex-col gap-3 overflow-x-auto lg:overflow-visible pb-4 lg:pb-0">
-          {WEATHER_ELEMENTS_DATA.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => setSelectedElement(item)}
-              className={`flex items-center gap-4 p-4 rounded-2xl transition-all duration-300 min-w-[200px] lg:w-full text-right ${
-                selectedElement.id === item.id 
-                ? 'bg-sky-600 text-white shadow-lg transform scale-105' 
-                : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-100'
-              }`}
-            >
-              <div className={`p-2 rounded-full ${selectedElement.id === item.id ? 'bg-white/20' : 'bg-slate-100'}`}>
-                {React.cloneElement(item.icon as React.ReactElement, { 
-                    className: selectedElement.id === item.id ? 'text-white' : 'text-slate-500' 
-                })}
-              </div>
-              <div>
-                  <span className="block font-bold text-lg">{item.name}</span>
-                  <span className="text-xs opacity-80 font-light hidden lg:block">{item.instrument}</span>
-              </div>
-            </button>
-          ))}
-        </div>
-
-        {/* Detail Content */}
-        <div className="lg:w-3/4 bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden flex flex-col animate-slide-up">
-            
-            {/* Header Image Area with Safe SVG Illustration */}
-            <div className="relative h-64 md:h-80 bg-slate-100 overflow-hidden group flex flex-col">
-               <div className="flex-1 relative">
-                   {renderElementIllustration(selectedElement.id)}
-               </div>
-               
-               {/* Interactive Lab Bar */}
-               <div className="h-16 bg-white/90 backdrop-blur border-t border-slate-200 flex items-center justify-between px-6 z-20 relative">
-                    {renderControls()}
-                    <span className="text-xs text-sky-600 bg-sky-50 px-2 py-1 rounded border border-sky-100 font-bold">مختبر تفاعلي 🧪</span>
-               </div>
-
-               <div className="absolute top-0 left-0 w-full bg-gradient-to-b from-black/60 to-transparent p-6 pointer-events-none z-10">
-                   <h3 className="text-3xl font-black text-white mb-1">{selectedElement.name}</h3>
-                   <p className="text-slate-200 text-sm max-w-2xl opacity-90">{selectedElement.definition}</p>
-               </div>
-            </div>
-
-            {/* Info Body */}
-            <div className="p-8 grid md:grid-cols-2 gap-8">
-                
-                {/* Left Column: Stats & Instrument */}
-                <div className="space-y-6">
-                    <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100">
-                        <h4 className="text-slate-400 font-bold text-xs uppercase tracking-wider mb-3">أداة القياس</h4>
-                        <div className="flex items-center gap-4">
-                            <div className="bg-white p-3 rounded-full shadow-sm border">
-                                {selectedElement.icon}
-                            </div>
-                            <div>
-                                <p className="text-2xl font-bold text-slate-800">{selectedElement.instrument}</p>
-                                <p className="text-sm text-slate-500 font-mono mt-1">وحدة القياس: {selectedElement.unit}</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="bg-sky-50 p-5 rounded-2xl border border-sky-100">
-                         <h4 className="flex items-center gap-2 font-bold text-sky-800 mb-2">
-                             <Settings size={18}/> كيف يحدث؟ (الآلية)
-                         </h4>
-                         <p className="text-sky-900 leading-relaxed text-sm">
-                             {selectedElement.mechanism}
-                         </p>
-                    </div>
-                </div>
-
-                {/* Right Column: Importance & Facts */}
-                <div className="space-y-6">
-                    <div>
-                        <h4 className="flex items-center gap-2 font-bold text-slate-800 mb-3 border-b pb-2">
-                            <Info size={18} className="text-indigo-500"/> لماذا نهتم به؟
-                        </h4>
-                        <p className="text-slate-600 leading-relaxed">
-                            {selectedElement.importance}
-                        </p>
-                    </div>
-
-                    <div className="bg-amber-50 p-5 rounded-2xl border border-amber-100 relative overflow-hidden">
-                        <div className="absolute top-0 right-0 p-4 opacity-10">
-                            <Lightbulb size={100} className="text-amber-500"/>
-                        </div>
-                        <h4 className="relative z-10 flex items-center gap-2 font-bold text-amber-800 mb-2">
-                             <Lightbulb size={18}/> هل تعلم؟
-                        </h4>
-                        <p className="relative z-10 text-amber-900 leading-relaxed text-sm italic">
-                             "{selectedElement.realWorldExample}"
-                        </p>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-
-      </div>
       <style>{`
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        @keyframes fall { from { transform: translateY(0); opacity: 1; } to { transform: translateY(20px); opacity: 0; } }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        @keyframes rain { 0% { transform: translateY(0); } 100% { transform: translateY(200px); } }
       `}</style>
     </div>
   );
