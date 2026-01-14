@@ -58,7 +58,7 @@
     },
     "files": [
       "dist-react/**/*",
-      "electron/main.cjs",
+      "electron/**/*", 
       "package.json"
     ],
     "win": {
