@@ -16,8 +16,11 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true,
-    "baseUrl": "."
+    "baseUrl": ".",
+    "paths": {
+      "*": ["*", "*.ts", "*.tsx"]
+    }
   },
-  "include": ["./**/*.ts", "./**/*.tsx", "vite-env.d.ts"],
-  "exclude": ["node_modules", "dist", "release"]
+  "include": ["**/*.ts", "**/*.tsx", "vite-env.d.ts"],
+  "exclude": ["node_modules", "dist", "release", "components/components", "**/components/components/**"]
 }
