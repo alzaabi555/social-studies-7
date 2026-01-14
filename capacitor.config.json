@@ -1,7 +1,7 @@
 {
   "appId": "com.oman.socialstudies",
   "appName": "الكتاب التفاعلي",
-  "webDir": "dist",
+  "webDir": "dist-react", 
   "server": {
     "androidScheme": "https",
     "iosScheme": "https",
