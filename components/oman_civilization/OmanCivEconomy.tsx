@@ -54,7 +54,7 @@ const OmanCivEconomy: React.FC = () => {
                 {/* Map Container */}
                 <div className="relative w-full rounded-2xl overflow-hidden border-4 border-slate-300 shadow-xl bg-blue-50">
                     <img 
-                        src="/map_trade_routes.png"
+                        src="./map_trade_routes.png"
                         onError={(e) => {e.currentTarget.src = "https://placehold.co/800x500/bfdbfe/1e3a8a?text=Trade+Map+Figure+10";}}
                         alt="Map of Trade Routes"
                         className="w-full h-auto block"

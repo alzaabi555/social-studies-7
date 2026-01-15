@@ -40,7 +40,7 @@ const OmanCivIntro: React.FC = () => {
             <div className="relative w-full bg-stone-200 overflow-hidden group" style={{ height: '500px' }}>
                 {/* Real Image: Page 91 */}
                 <img 
-                    src="/img_al_aqr.png"
+                    src="./img_al_aqr.png"
                     onError={(e) => {e.currentTarget.src = "https://placehold.co/800x500/d6d3d1/57534e?text=Al+Aqr+Image+Page+91";}}
                     alt="Harat Al Aqr"
                     className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"

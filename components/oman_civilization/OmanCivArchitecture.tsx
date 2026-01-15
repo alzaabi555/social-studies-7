@@ -50,7 +50,7 @@ const OmanCivArchitecture: React.FC = () => {
                     <div className="relative h-80 bg-slate-100 rounded-2xl overflow-hidden border-4 border-slate-300 group">
                         {/* Real Image: Mosques/Schools */}
                         <img 
-                            src="/img_arch_civil.png"
+                            src="./img_arch_civil.png"
                             onError={(e) => {e.currentTarget.src = "https://placehold.co/600x400/e0e7ff/3730a3?text=Mosques+and+Schools+Img";}}
                             alt="Omani Civil Architecture"
                             className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
@@ -89,7 +89,7 @@ const OmanCivArchitecture: React.FC = () => {
                     <div className="relative h-80 bg-slate-100 rounded-2xl overflow-hidden border-4 border-slate-300 group">
                         {/* Real Image: Forts/Walls */}
                         <img 
-                            src="/img_arch_military.png"
+                            src="./img_arch_military.png"
                             onError={(e) => {e.currentTarget.src = "https://placehold.co/600x400/fee2e2/991b1b?text=Military+Forts+Img";}}
                             alt="Omani Military Architecture"
                             className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"

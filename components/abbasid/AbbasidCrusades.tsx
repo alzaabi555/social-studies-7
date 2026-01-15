@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Shield, Map, Play, RefreshCw, FileText } from 'lucide-react';
 
@@ -44,7 +45,7 @@ const AbbasidCrusades: React.FC = () => {
 
                 <div className="relative w-full rounded-xl overflow-hidden border-2 border-slate-300 bg-slate-100">
                     <img 
-                        src="/map_hattin.png"
+                        src="./map_hattin.png"
                         onError={(e) => {e.currentTarget.src = "https://placehold.co/600x800/e0f2fe/1e293b?text=Map+Hattin";}}
                         alt="Battle of Hattin Map"
                         className="w-full h-auto block object-contain"

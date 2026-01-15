@@ -59,7 +59,7 @@ const AbbasidInvasion: React.FC = () => {
             <div className="md:w-2/3">
                 <div className="relative w-full bg-slate-100 rounded-2xl overflow-hidden border-4 border-slate-300 shadow-xl">
                     <img 
-                        src="/map_bin_nur.png"
+                        src="./map_bin_nur.png"
                         onError={(e) => {e.currentTarget.src = "https://placehold.co/800x500/f1f5f9/dc2626?text=Map+Bin+Nur+Figure+7";}}
                         alt="Map of Abbasid Invasion"
                         className="w-full h-auto block"

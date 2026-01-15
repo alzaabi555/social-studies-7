@@ -13,10 +13,13 @@ const StatutePillars: React.FC = () => {
             {/* Visual Centerpiece */}
             <div className="relative h-80 bg-gradient-to-br from-slate-800 to-slate-900 rounded-3xl shadow-2xl flex items-center justify-center p-8 overflow-hidden">
                 {/* Background Pattern - Local */}
-                <div className="absolute inset-0 bg-[url('/arabesque_pattern.png')] opacity-10"></div>
+                <div 
+                    className="absolute inset-0 opacity-10"
+                    style={{ backgroundImage: "url('arabesque_pattern.png')" }}
+                ></div>
                 <div className="text-center text-white z-10">
                     {/* Emblem - Local */}
-                    <img src="/oman_emblem.png" alt="Oman Emblem" className="h-32 w-auto mx-auto mb-6 filter drop-shadow-lg" />
+                    <img src="oman_emblem.png" alt="Oman Emblem" className="h-32 w-auto mx-auto mb-6 filter drop-shadow-lg" />
                     <h3 className="text-2xl font-bold text-yellow-400">سلطنة عُمان</h3>
                     <p className="text-slate-300 mt-2">دولة عربية إسلامية ذات سيادة تامة</p>
                 </div>

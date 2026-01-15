@@ -73,7 +73,7 @@ const NabhanidEra: React.FC = () => {
                 <div className="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden">
                     <div className="relative w-full bg-slate-100 border-b border-slate-200">
                         <img 
-                            src="/map_nabhanid.png"
+                            src="./map_nabhanid.png"
                             onError={(e) => {e.currentTarget.src = "https://placehold.co/800x500/f8fafc/475569?text=Map+Nabhanid+Figure+8";}}
                             alt="Map of Nabhanid Cities"
                             className="w-full h-auto block"

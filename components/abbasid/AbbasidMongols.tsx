@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Skull, Ban, Play, RotateCcw, Droplets } from 'lucide-react';
 
@@ -38,7 +39,7 @@ const AbbasidMongols: React.FC = () => {
 
                 <div className="relative w-full rounded-2xl overflow-hidden border-4 border-slate-300 shadow-xl bg-slate-200">
                     <img 
-                        src="/map_mongol.png"
+                        src="./map_mongol.png"
                         onError={(e) => {e.currentTarget.src = "https://placehold.co/800x400/d1d5db/374151?text=Mongol+Invasion+Map";}}
                         alt="Mongol Invasion Map"
                         className="w-full h-auto block"
@@ -105,7 +106,7 @@ const AbbasidMongols: React.FC = () => {
 
                  <div className="relative w-full rounded-2xl overflow-hidden border-4 border-green-300 shadow-xl bg-slate-200">
                     <img 
-                        src="/map_ain_jalut.png"
+                        src="./map_ain_jalut.png"
                         onError={(e) => {e.currentTarget.src = "https://placehold.co/800x400/dcfce7/166534?text=Ain+Jalut+Map";}}
                         alt="Ain Jalut Map"
                         className="w-full h-auto block"

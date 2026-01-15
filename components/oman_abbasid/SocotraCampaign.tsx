@@ -57,7 +57,7 @@ const SocotraCampaign: React.FC = () => {
 
                  <div className="relative w-full rounded-2xl overflow-hidden border-4 border-slate-300 bg-slate-100 shadow-inner">
                      <img 
-                        src="/map_socotra.png"
+                        src="./map_socotra.png"
                         onError={(e) => {e.currentTarget.src = "https://placehold.co/800x500/e0f2fe/1e40af?text=Map+Socotra+Figure+6";}}
                         alt="Map of Socotra Campaign"
                         className="w-full h-auto block"

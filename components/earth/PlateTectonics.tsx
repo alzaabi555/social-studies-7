@@ -175,16 +175,16 @@ const PlateTectonics: React.FC = () => {
 
                          {/* Left Land Mass (Down) */}
                          <div 
-                            className="absolute inset-y-0 left-0 w-1/2 bg-[url('/soil_pattern.png')] bg-amber-100 border-r border-stone-500"
-                            style={{ transform: step >= 1 ? 'translateY(40px)' : 'translateY(0)', transition: 'transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)' }}
+                            className="absolute inset-y-0 left-0 w-1/2 bg-amber-100 border-r border-stone-500"
+                            style={{ backgroundImage: "url('soil_pattern.png')", transform: step >= 1 ? 'translateY(40px)' : 'translateY(0)', transition: 'transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)' }}
                          >
                             <div className="absolute top-10 right-0 w-full h-6 bg-slate-400 border-y-2 border-white border-dashed flex items-center justify-center text-[8px] text-white">طريق</div>
                          </div>
 
                          {/* Right Land Mass (Up) */}
                          <div 
-                            className="absolute inset-y-0 right-0 w-1/2 bg-[url('/soil_pattern.png')] bg-amber-100 border-l border-stone-500"
-                            style={{ transform: step >= 1 ? 'translateY(-40px)' : 'translateY(0)', transition: 'transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)' }}
+                            className="absolute inset-y-0 right-0 w-1/2 bg-amber-100 border-l border-stone-500"
+                            style={{ backgroundImage: "url('soil_pattern.png')", transform: step >= 1 ? 'translateY(-40px)' : 'translateY(0)', transition: 'transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)' }}
                          >
                             <div className="absolute top-10 left-0 w-full h-6 bg-slate-400 border-y-2 border-white border-dashed flex items-center justify-center text-[8px] text-white">طريق</div>
                          </div>

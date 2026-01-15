@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { MousePointerClick, Info } from 'lucide-react';
 
@@ -50,7 +51,7 @@ const AbbasidPolitical: React.FC = () => {
         <div className="relative w-full rounded-2xl overflow-hidden shadow-2xl border-4 border-slate-300 group bg-slate-200">
             {/* 1. Base Image - The actual map provided */}
             <img 
-                src="/map_political.png"
+                src="./map_political.png"
                 onError={(e) => {e.currentTarget.src = "https://placehold.co/800x400/e2e8f0/475569?text=Map+Image+Not+Found";}}
                 alt="Political Map" 
                 className="w-full h-auto object-contain block"
