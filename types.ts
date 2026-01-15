@@ -1,14 +1,28 @@
+
 import React from 'react';
 
 export type LessonId = 
   // Grade 7
   | 'WEATHER' | 'OMAN_CLIMATE' | 'EARTH_LAYERS' | 'EXTERNAL_PROCESSES' | 'UNIT_1_ASSESSMENT' 
-  | 'UMAYYAD_STATE' | 'OMAN_ABBASID' | 'OMAN_CIVILIZATION' | 'UNIT_2_ASSESSMENT' 
-  | 'BASIC_STATUTE' | 'STATE_INSTITUTIONS' | 'UNIT_3_ASSESSMENT' | 'FINAL_EXAM'
+  | 'ABBASID_STATE' | 'OMAN_ABBASID' | 'OMAN_CIVILIZATION' | 'UNIT_2_ASSESSMENT' 
+  | 'BASIC_STATUTE' | 'STATE_INSTITUTIONS' | 'UNIT_3_ASSESSMENT'
   // Grade 6
   | 'SIXTH_POPULATION' | 'SIXTH_STRUCTURE' | 'SIXTH_GROWTH' | 'SIXTH_DENSITY' | 'UNIT_1_G6_ASSESSMENT'
-  | 'OMAN_UMAYYAD' | 'OMAN_UMAYYAD_ACHIEVEMENTS' | 'UNIT_2_G6_ASSESSMENT'
-  | 'SIXTH_CIVIL_SOCIETY' | 'SIXTH_COMMUNITY_PARTICIPATION' | 'UNIT_3_G6_ASSESSMENT' // Added Unit 3 Assessment
+  | 'SIXTH_UMAYYAD_STATE' | 'OMAN_UMAYYAD' | 'OMAN_UMAYYAD_ACHIEVEMENTS' | 'UNIT_2_G6_ASSESSMENT'
+  | 'SIXTH_CIVIL_SOCIETY' | 'SIXTH_COMMUNITY_PARTICIPATION' | 'UNIT_3_G6_ASSESSMENT' 
+  // Grade 5 (Unit 1)
+  | 'FIFTH_MAPS'
+  | 'FIFTH_SPHERES_CONCEPT' | 'FIFTH_SPHERES_RELATION' | 'FIFTH_RESOURCES' | 'UNIT_1_G5_ASSESSMENT'
+  // Grade 5 (Unit 2)
+  | 'FIFTH_ISLAMIC_STATE' 
+  | 'FIFTH_OMAN_PROPHET' 
+  | 'FIFTH_OMAN_PERSONALITIES' 
+  | 'UNIT_2_G5_ASSESSMENT'
+  // Grade 5 (Unit 3 - NEW)
+  | 'FIFTH_RIGHTS_DUTIES'
+  | 'FIFTH_INSTITUTIONS_CONVENTIONS'
+  | 'UNIT_3_G5_ASSESSMENT'
+  | 'FINAL_EXAM_G5'
   | null;
 
 export interface Lesson {
@@ -49,16 +63,18 @@ export enum Section {
   EROSION = 'EROSION',
   DEPOSITION = 'DEPOSITION',
   
-  // Grade 7 History (Umayyad & Abbasid)
-  UMAYYAD_RISE = 'UMAYYAD_RISE',
+  // Grade 7 History
+  UMAYYAD_RISE = 'UMAYYAD_RISE', 
   UMAYYAD_CONQUESTS = 'UMAYYAD_CONQUESTS',
   UMAYYAD_ACHIEVEMENTS = 'UMAYYAD_ACHIEVEMENTS',
   UMAYYAD_FALL = 'UMAYYAD_FALL',
   
+  // Abbasid Sections
   POLITICAL_MAP = 'POLITICAL_MAP',
   PROSPERITY = 'PROSPERITY',
   CRUSADES = 'CRUSADES',
   MONGOLS = 'MONGOLS',
+
   IMAMATE_STABILITY = 'IMAMATE_STABILITY',
   SOCOTRA_CAMPAIGN = 'SOCOTRA_CAMPAIGN',
   ABBASID_INVASION = 'ABBASID_INVASION',
@@ -81,52 +97,62 @@ export enum Section {
   GOV_SERVICES = 'GOV_SERVICES',
 
   // Grade 6 Sections
-  
-  // Grade 6 Population Sections
   POP_SOURCES = 'POP_SOURCES',
   CENSUS_EVOLUTION = 'CENSUS_EVOLUTION',
   POP_IMPORTANCE = 'POP_IMPORTANCE',
-  
-  // Grade 6 Structure Sections
-  // Reusing FACTORS, REGIONS, DATA_ANALYSIS, PROCESSES for Structure lesson context mapping
-
-  // Grade 6 Growth Sections
   GROWTH_INTRO = 'GROWTH_INTRO',
   OMAN_GROWTH_CHART = 'OMAN_GROWTH_CHART',
   NATURAL_INCREASE = 'NATURAL_INCREASE',
   MIGRATION_IMPACT = 'MIGRATION_IMPACT',
   GROWTH_EFFECTS = 'GROWTH_EFFECTS',
-
-  // Grade 6 Density Sections (Updated)
   DENSITY_INTRO = 'DENSITY_INTRO',
   DENSITY_FACTORS = 'DENSITY_FACTORS',
   CITY_VILLAGE = 'CITY_VILLAGE',
   DENSITY_CALC = 'DENSITY_CALC',
   DENSITY_MAP_ANALYSIS = 'DENSITY_MAP_ANALYSIS',
   OMAN_DENSITY = 'OMAN_DENSITY',
-
-  // Grade 6 Oman & Umayyads (New)
   OMAN_UMAYYAD_INTRO = 'OMAN_UMAYYAD_INTRO',
   OMAN_UMAYYAD_STANCE = 'OMAN_UMAYYAD_STANCE',
   OMAN_UMAYYAD_INDEPENDENCE = 'OMAN_UMAYYAD_INDEPENDENCE',
   OMAN_UMAYYAD_CONTROL = 'OMAN_UMAYYAD_CONTROL',
   OMAN_UMAYYAD_GOVERNORS = 'OMAN_UMAYYAD_GOVERNORS',
-
-  // Grade 6 Oman Achievements (New)
   OMAN_ACHIEVEMENTS_INTRO = 'OMAN_ACHIEVEMENTS_INTRO',
   OMAN_ACHIEVEMENTS_CULTURE = 'OMAN_ACHIEVEMENTS_CULTURE',
   OMAN_ACHIEVEMENTS_MILITARY = 'OMAN_ACHIEVEMENTS_MILITARY',
   OMAN_ACHIEVEMENTS_ECONOMY = 'OMAN_ACHIEVEMENTS_ECONOMY',
-
-  // Grade 6 Civil Society (New)
   CIVIL_SOCIETY_INTRO = 'CIVIL_SOCIETY_INTRO',
   CIVIL_SOCIETY_TYPES = 'CIVIL_SOCIETY_TYPES',
   CIVIL_SOCIETY_IMPORTANCE = 'CIVIL_SOCIETY_IMPORTANCE',
-
-  // Grade 6 Community Participation (New)
   COMMUNITY_INTRO = 'COMMUNITY_INTRO',
   COMMUNITY_FORMS = 'COMMUNITY_FORMS',
-  COMMUNITY_IMPORTANCE = 'COMMUNITY_IMPORTANCE'
+  COMMUNITY_IMPORTANCE = 'COMMUNITY_IMPORTANCE',
+
+  // Grade 5 Unit 1
+  SPHERES_INTRO = 'SPHERES_INTRO',
+  LITHOSPHERE = 'LITHOSPHERE',
+  HYDROSPHERE = 'HYDROSPHERE',
+  ATMOSPHERE = 'ATMOSPHERE',
+  BIOSPHERE = 'BIOSPHERE',
+  MAPS_INTRO = 'MAPS_INTRO',
+  MAPS_ELEMENTS = 'MAPS_ELEMENTS',
+  MAPS_TYPES = 'MAPS_TYPES',
+  MAPS_IMPORTANCE = 'MAPS_IMPORTANCE',
+
+  // Grade 5 Unit 2
+  ISLAMIC_STATE_FOUNDATION = 'ISLAMIC_STATE_FOUNDATION',
+  ISLAMIC_STATE_PILLARS = 'ISLAMIC_STATE_PILLARS',
+  OMAN_ISLAM_STORY = 'OMAN_ISLAM_STORY',
+  OMAN_PROPHET_LETTER = 'OMAN_PROPHET_LETTER',
+  MAZIN_GHADOUBAH = 'MAZIN_GHADOUBAH',
+  OMAN_DELEGATIONS = 'OMAN_DELEGATIONS',
+
+  // Grade 5 Unit 3
+  RIGHTS_DUTIES_INTRO = 'RIGHTS_DUTIES_INTRO',
+  RIGHTS_TYPES = 'RIGHTS_TYPES',
+  DUTIES_TYPES = 'DUTIES_TYPES',
+  INSTITUTIONS_INTRO = 'INSTITUTIONS_INTRO',
+  NATIONAL_INSTITUTIONS = 'NATIONAL_INSTITUTIONS',
+  INTL_CONVENTIONS = 'INTL_CONVENTIONS'
 }
 
 export interface QuizQuestion {
@@ -134,7 +160,7 @@ export interface QuizQuestion {
   question: string;
   options: string[];
   correctIndex: number;
-  visualComponent?: React.ReactNode; // Optional custom visual for the question
+  visualComponent?: React.ReactNode; 
 }
 
 export interface WeatherElement {
@@ -143,8 +169,8 @@ export interface WeatherElement {
   instrument: string;
   unit: string;
   definition: string;
-  mechanism: string; // How it works/happens
-  importance: string; // Why do we measure it?
+  mechanism: string; 
+  importance: string; 
   realWorldExample: string;
   icon: React.ReactNode;
 }
@@ -154,7 +180,7 @@ export interface Factor {
   title: string;
   description: string;
   detailedExplanation: string;
-  scientificPrinciple: string; // The "Why"
+  scientificPrinciple: string; 
   effect: string;
 }
 
@@ -173,6 +199,6 @@ export interface EarthLayer {
     depth: string;
     temp: string;
     description: string;
-    state: string; // Solid, Molten, etc.
+    state: string; 
     color: string;
 }
