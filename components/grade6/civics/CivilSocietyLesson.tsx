@@ -217,7 +217,7 @@ const CivilSocietyLesson: React.FC<Props> = ({ onBack }) => {
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-teal-50 text-right font-tajawal">
       <aside className={`fixed md:relative z-20 w-64 h-full bg-white shadow-xl transform transition-transform duration-300 ${mobileMenuOpen ? 'translate-x-0' : 'translate-x-full md:translate-x-0'} right-0 md:right-auto border-l border-teal-100 flex flex-col`}>
-        <div className="p-4 border-b border-teal-100">
+        <div className="p-4 border-b border-teal-100 pt-[max(1rem,env(safe-area-inset-top))]">
           <button onClick={onBack} className="flex items-center gap-2 text-slate-500 hover:text-teal-600 bg-slate-50 hover:bg-teal-50 px-3 py-2 rounded-lg w-full transition-colors mb-4 text-sm font-bold">
              <ArrowRight size={16} /> العودة للمكتبة
           </button>
@@ -239,7 +239,7 @@ const CivilSocietyLesson: React.FC<Props> = ({ onBack }) => {
         </nav>
       </aside>
       <main className="flex-1 min-h-screen overflow-y-auto">
-        <header className="md:hidden bg-white p-4 shadow-sm flex justify-between items-center sticky top-0 z-10">
+        <header className="md:hidden bg-white p-4 shadow-sm flex justify-between items-center sticky top-0 z-10 pt-[max(1rem,env(safe-area-inset-top))]">
            <span className="font-bold text-lg text-teal-800">مؤسسات المجتمع المدني</span>
            <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="p-2 text-slate-700"><Menu /></button>
         </header>
