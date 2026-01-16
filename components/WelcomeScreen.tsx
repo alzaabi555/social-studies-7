@@ -82,7 +82,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onSelectGrade }) => {
             <div className="flex items-center gap-6">
                 <div className="flex items-center gap-2">
                     <User size={16} className="text-indigo-400" />
-                    <span className="font-bold">إعداد: أ. محمد درويش</span>
+                    <span className="font-bold">إعداد: أ. محمد درويش الزعابي</span>
                 </div>
                 <div className="hidden md:block w-1 h-1 bg-slate-600 rounded-full"></div>
                 <div className="flex items-center gap-2">
@@ -93,7 +93,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onSelectGrade }) => {
 
             <div className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-full border border-white/10">
                 <Phone size={16} className="text-yellow-400" />
-                <span className="font-mono dir-ltr">99999999</span> {/* Placeholder for phone number */}
+                <span className="font-mono dir-ltr">98344555</span> {/* Placeholder for phone number */}
             </div>
 
         </div>
