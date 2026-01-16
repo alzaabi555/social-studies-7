@@ -1,16 +1,16 @@
 
 import React, { useState, useEffect } from 'react';
-import { UNITS, UNITS_SIXTH, UNITS_FIFTH } from '../constants';
-import { Lock, ChevronLeft, Briefcase, History, PlayCircle, UserCog, Save, School, GraduationCap, Sparkles, Globe2, BookOpen, Phone, User } from 'lucide-react';
+import { UNITS, UNITS_SIXTH } from '../constants';
+import { Lock, ChevronLeft, Briefcase, History, PlayCircle, UserCog, Save, LogOut, Sparkles, BookOpen } from 'lucide-react';
 import { LessonId, Lesson } from '../types';
 
 interface CourseIndexProps {
   onSelectLesson: (id: LessonId) => void;
+  selectedGrade: 6 | 7;
+  onGoBack: () => void;
 }
 
-const CourseIndex: React.FC<CourseIndexProps> = ({ onSelectLesson }) => {
-  // Removed viewMode state to enforce list view
-  const [activeGrade, setActiveGrade] = useState<5 | 6 | 7>(5);
+const CourseIndex: React.FC<CourseIndexProps> = ({ onSelectLesson, selectedGrade, onGoBack }) => {
   const [greeting, setGreeting] = useState('');
   
   // --- State for Teacher Data & Progress ---
@@ -27,34 +27,23 @@ const CourseIndex: React.FC<CourseIndexProps> = ({ onSelectLesson }) => {
     const savedName = localStorage.getItem('teacherName');
     const savedSchool = localStorage.getItem('schoolName');
     const savedLastLesson = localStorage.getItem('lastLessonId');
-    const savedGrade = localStorage.getItem('selectedGradeLevel');
 
     if (savedName) setTeacherName(savedName);
     if (savedSchool) setSchoolName(savedSchool);
     if (savedLastLesson) setLastLessonId(savedLastLesson);
     
-    if (savedGrade) {
-        setActiveGrade(Number(savedGrade) as 5 | 6 | 7);
-    } else {
-        setActiveGrade(5);
-    }
-
     const hour = new Date().getHours();
     if (hour < 12) setGreeting('صباح الخير');
     else if (hour < 18) setGreeting('مساء الخير');
     else setGreeting('مساؤك سعيد');
   }, []);
 
-  const handleGradeChange = (grade: 5 | 6 | 7) => {
-      setActiveGrade(grade);
-      localStorage.setItem('selectedGradeLevel', String(grade));
-  };
-
-  const currentUnits = activeGrade === 5 ? UNITS_FIFTH : activeGrade === 6 ? UNITS_SIXTH : UNITS;
+  // Determine which units to show based on PROPS (not internal state)
+  const currentUnits = selectedGrade === 6 ? UNITS_SIXTH : UNITS;
 
   const getLastLessonDetails = (): Lesson | null => {
       if (!lastLessonId) return null;
-      const allUnits = [...UNITS, ...UNITS_SIXTH, ...UNITS_FIFTH];
+      const allUnits = [...UNITS, ...UNITS_SIXTH];
       for (const unit of allUnits) {
           const lesson = unit.lessons.find(l => l.id === lastLessonId);
           if (lesson) return lesson;
@@ -84,17 +73,23 @@ const CourseIndex: React.FC<CourseIndexProps> = ({ onSelectLesson }) => {
   return (
     <div className="min-h-screen bg-slate-50 text-right font-tajawal pb-20 select-none" dir="rtl">
       
-      {/* Header - Fixed to handle Notch/Safe Area */}
+      {/* Header */}
       <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200 px-4 md:px-6 shadow-sm pt-[max(1rem,env(safe-area-inset-top))] pb-3 transition-all duration-200">
         <div className="max-w-7xl mx-auto flex justify-between items-center relative">
             <div className="flex items-center gap-3">
-                <div className="w-10 h-10 md:w-12 md:h-12 bg-indigo-700 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-200">
-                    <Briefcase size={24} />
-                </div>
+                <button 
+                    onClick={onGoBack}
+                    className="w-10 h-10 bg-slate-100 hover:bg-red-50 hover:text-red-600 rounded-xl flex items-center justify-center text-slate-600 transition-colors"
+                    title="خروج للقائمة الرئيسية"
+                >
+                    <LogOut size={20} className="transform rotate-180" />
+                </button>
                 <div>
                     <h1 className="text-lg md:text-xl font-black text-slate-800 leading-none mb-1">الحقيبة التفاعلية</h1>
                     <div className="flex items-center gap-2">
-                        <span className="text-[10px] md:text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">نسخة المعلم</span>
+                        <span className={`text-[10px] md:text-xs font-bold px-2 py-0.5 rounded border ${selectedGrade === 6 ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-purple-50 text-purple-700 border-purple-100'}`}>
+                            {selectedGrade === 6 ? 'الصف السادس' : 'الصف السابع'}
+                        </span>
                     </div>
                 </div>
             </div>
@@ -199,24 +194,23 @@ const CourseIndex: React.FC<CourseIndexProps> = ({ onSelectLesson }) => {
       </header>
 
       {/* Hero Section */}
-      <div className="relative bg-gradient-to-b from-indigo-900 via-indigo-800 to-indigo-900 text-white py-10 px-6 overflow-hidden shadow-2xl">
+      <div className={`relative bg-gradient-to-b text-white py-10 px-6 overflow-hidden shadow-2xl ${selectedGrade === 6 ? 'from-emerald-900 via-emerald-800 to-emerald-900' : 'from-indigo-900 via-indigo-800 to-indigo-900'}`}>
           <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
-          <div className="absolute top-10 left-10 w-32 h-32 bg-indigo-600 rounded-full blur-3xl opacity-30 animate-pulse"></div>
-          <div className="absolute bottom-10 right-10 w-48 h-48 bg-purple-600 rounded-full blur-3xl opacity-30 animate-pulse" style={{ animationDelay: '1s' }}></div>
+          <div className="absolute top-10 left-10 w-32 h-32 bg-white rounded-full blur-3xl opacity-10 animate-pulse"></div>
 
           <div className="max-w-6xl mx-auto relative z-10">
               <div className="flex flex-col md:flex-row justify-between items-center gap-8">
                   <div>
-                      <div className="inline-block bg-indigo-500/30 backdrop-blur-sm border border-indigo-400/30 rounded-full px-4 py-1.5 text-xs font-bold text-indigo-100 mb-4 shadow-sm animate-fade-in flex items-center gap-2">
+                      <div className="inline-block bg-white/20 backdrop-blur-sm border border-white/30 rounded-full px-4 py-1.5 text-xs font-bold text-white mb-4 shadow-sm animate-fade-in flex items-center gap-2">
                           <Sparkles size={14} className="text-yellow-300"/> {greeting} يا أستاذ {teacherName.split(' ')[1] || teacherName}
                       </div>
                       <h2 className="text-3xl md:text-5xl font-black mb-4 leading-tight">
                           مادة الدراسات الاجتماعية <br/>
-                          <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-200 to-white">
-                              {activeGrade === 5 ? 'للصف الخامس' : activeGrade === 6 ? 'للصف السادس' : 'للصف السابع'}
+                          <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 to-white">
+                              {selectedGrade === 6 ? 'للصف السادس' : 'للصف السابع'}
                           </span>
                       </h2>
-                      <div className="flex flex-wrap gap-3 mt-2 text-indigo-200 text-sm font-medium">
+                      <div className="flex flex-wrap gap-3 mt-2 text-white/80 text-sm font-medium">
                           <span className="bg-white/10 px-3 py-1 rounded-lg flex items-center gap-2 border border-white/10"><Briefcase size={16}/> الفصل الدراسي الثاني</span>
                       </div>
                   </div>
@@ -225,28 +219,12 @@ const CourseIndex: React.FC<CourseIndexProps> = ({ onSelectLesson }) => {
                       <div className="bg-white/10 backdrop-blur-md border border-white/20 p-6 rounded-2xl flex gap-8 shadow-xl hover:bg-white/20 transition-colors cursor-default justify-center">
                           <div className="text-center">
                               <div className="text-3xl font-black text-white">{totalUnits}</div>
-                              <div className="text-xs text-indigo-200 font-bold uppercase tracking-wider mt-1">وحدات</div>
+                              <div className="text-xs text-white/70 font-bold uppercase tracking-wider mt-1">وحدات</div>
                           </div>
                           <div className="w-px bg-white/20"></div>
                           <div className="text-center">
                               <div className="text-3xl font-black text-white">{totalLessons}</div>
-                              <div className="text-xs text-indigo-200 font-bold uppercase tracking-wider mt-1">دروس</div>
-                          </div>
-                      </div>
-
-                      {/* Author Info Block */}
-                      <div className="bg-indigo-950/60 backdrop-blur-sm border border-indigo-500/30 p-4 rounded-xl flex flex-col gap-2 shadow-lg">
-                          <div className="flex items-center gap-2 text-white">
-                              <User size={16} className="text-yellow-400"/>
-                              <span className="font-bold text-sm">محمد درويش الزعابي - معلم دراسات اجتماعية</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-indigo-200">
-                              <School size={16}/>
-                              <span className="text-xs font-bold">مدرسة الإبداع للبنين</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-indigo-200">
-                              <Phone size={16}/>
-                              <span className="text-xs font-bold font-mono">98344555</span>
+                              <div className="text-xs text-white/70 font-bold uppercase tracking-wider mt-1">دروس</div>
                           </div>
                       </div>
                   </div>
@@ -257,43 +235,12 @@ const CourseIndex: React.FC<CourseIndexProps> = ({ onSelectLesson }) => {
       {/* Main Content */}
       <main className="max-w-6xl mx-auto px-4 md:px-6 py-10 -mt-8 relative z-20">
           
-          {/* Grade Selector Tabs */}
-          <div className="flex justify-center mb-10">
-              <div className="bg-white p-1.5 rounded-2xl shadow-lg border border-indigo-100 flex gap-1 w-full max-w-xl">
-                  <button 
-                      onClick={() => handleGradeChange(5)}
-                      className={`flex-1 px-4 py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all duration-300 relative ${activeGrade === 5 ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 hover:bg-slate-50'}`}
-                  >
-                      <Globe2 size={20} />
-                      الصف الخامس
-                      {activeGrade !== 5 && <span className="absolute -top-1 -right-1 flex h-3 w-3">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
-                      </span>}
-                  </button>
-                  <button 
-                      onClick={() => handleGradeChange(6)}
-                      className={`flex-1 px-4 py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all duration-300 ${activeGrade === 6 ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 hover:bg-slate-50'}`}
-                  >
-                      <GraduationCap size={20} />
-                      الصف السادس
-                  </button>
-                  <button 
-                      onClick={() => handleGradeChange(7)}
-                      className={`flex-1 px-4 py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all duration-300 ${activeGrade === 7 ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 hover:bg-slate-50'}`}
-                  >
-                      <GraduationCap size={20} />
-                      الصف السابع
-                  </button>
-              </div>
-          </div>
-
           {/* Units */}
           <div className="space-y-12">
               {currentUnits.length > 0 ? currentUnits.map((unit) => (
                   <section key={unit.id} className="animate-slide-up">
                       <div className="flex items-center gap-4 mb-6">
-                          <div className="h-10 w-2 bg-indigo-600 rounded-full shadow-sm"></div>
+                          <div className={`h-10 w-2 rounded-full shadow-sm ${selectedGrade === 6 ? 'bg-emerald-600' : 'bg-indigo-600'}`}></div>
                           <div>
                               <h3 className="text-2xl font-black text-slate-800">{unit.title}</h3>
                               <p className="text-slate-500 text-sm mt-1">{unit.description}</p>
