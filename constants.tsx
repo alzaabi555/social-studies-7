@@ -1,4 +1,3 @@
-
 import { Unit, Section, QuizQuestion, WeatherElement, EarthLayer, OmanRegion } from './types';
 import { 
   CloudSun, Thermometer, Wind, Umbrella, CloudRain, Mountain, Globe2, 
@@ -14,6 +13,7 @@ import {
 import React from 'react';
 
 // --- WEATHER ELEMENTS ---
+// [صورة لأدوات قياس الطقس: الثرمومتر، البارومتر، الأنيمومتر، مقياس المطر]
 export const WEATHER_ELEMENTS_DATA: WeatherElement[] = [
     {
         id: 'temp',
@@ -118,6 +118,7 @@ export const OMAN_SECTIONS = [
     { id: Section.QUIZ, label: 'اختبار', icon: <Activity /> }
 ];
 
+// [صورة لخريطة سلطنة عمان توضح الأقاليم المناخية]
 export const OMAN_REGIONS_DATA: OmanRegion[] = [
     { id: 'semi_desert', name: 'شبه الصحراوي', description: 'يسود في شمال السلطنة', characteristics: 'حار صيفاً ودافئ شتاءً', location: 'شمال السلطنة', color: 'bg-yellow-100' },
     { id: 'mediterranean', name: 'البحر المتوسط', description: 'في المناطق الجبلية المرتفعة', characteristics: 'معتدل صيفاً وبارد شتاءً', location: 'الجبل الأخضر', color: 'bg-green-100' },
@@ -153,6 +154,7 @@ export const OMAN_QUIZ_QUESTIONS: QuizQuestion[] = [
 ];
 
 // --- EARTH LAYERS LESSON ---
+// [صورة لمقطع عرضي يوضح طبقات الأرض: القشرة، الوشاح، اللب]
 export const EARTH_LAYERS_DATA: EarthLayer[] = [
     { id: 'crust', name: 'القشرة الأرضية', depth: '0-100 كم', temp: 'متفاوتة', description: 'الطبقة الخارجية الصلبة التي نعيش عليها.', state: 'صلبة', color: '#8B4513' },
     { id: 'mantle', name: 'الوشاح', depth: '2900 كم', temp: '1000-3700°C', description: 'طبقة سميكة من الصخور المنصهرة (الماجما).', state: 'لدنة', color: '#D2691E' },
@@ -176,6 +178,7 @@ export const EARTH_QUIZ_QUESTIONS: QuizQuestion[] = [
 // --- EXTERNAL PROCESSES LESSON ---
 export const EXTERNAL_SECTIONS = [
     { id: Section.INTRO, label: 'مقدمة', icon: <Target /> },
+    // [صورة توضيحية لعمليات التجوية والتعرية والترسيب]
     { id: Section.WEATHERING, label: 'التجوية', icon: <Sun /> },
     { id: Section.EROSION, label: 'التعرية', icon: <Wind /> },
     { id: Section.DEPOSITION, label: 'الترسب', icon: <Layers /> },
@@ -187,11 +190,14 @@ export const EXTERNAL_QUIZ_QUESTIONS: QuizQuestion[] = [
 ];
 
 // --- ABBASID LESSON ---
+// [صورة لخريطة الدولة العباسية في أقصى اتساع لها]
 export const ABBASID_SECTIONS = [
     { id: Section.INTRO, label: 'مقدمة', icon: <Target /> },
     { id: Section.POLITICAL_MAP, label: 'الخريطة السياسية', icon: <Map /> },
     { id: Section.PROSPERITY, label: 'الازدهار الحضاري', icon: <Star /> },
     { id: Section.CRUSADES, label: 'الحروب الصليبية', icon: <Shield /> },
+    // ✅ هنا تمت إضافة معركة حطين كما طلبت
+    { id: Section.HATTIN, label: 'معركة حطين', icon: <Swords /> }, 
     { id: Section.MONGOLS, label: 'الغزو المغولي', icon: <Flag /> },
     { id: Section.QUIZ, label: 'اختبار', icon: <Activity /> }
 ];
@@ -278,6 +284,7 @@ export const SIXTH_STRUCTURE_SECTIONS = [
     { id: Section.INTRO, label: 'مقدمة', icon: <Target /> },
     { id: Section.FACTORS, label: 'النوع', icon: <Users /> },
     { id: Section.REGIONS, label: 'العمر', icon: <Activity /> },
+    // [صورة لرسم بياني للهرم السكاني يوضح التركيب العمري والنوعي]
     { id: Section.DATA_ANALYSIS, label: 'الهرم السكاني', icon: <BarChart2 /> },
     { id: Section.PROCESSES, label: 'البنية الاقتصادية', icon: <Coins /> },
     { id: Section.QUIZ, label: 'اختبار', icon: <Activity /> }
@@ -305,6 +312,7 @@ export const SIXTH_DENSITY_SECTIONS = [
     { id: Section.DENSITY_FACTORS, label: 'العوامل المؤثرة', icon: <Settings /> },
     { id: Section.CITY_VILLAGE, label: 'المدينة والريف', icon: <Building2 /> },
     { id: Section.DENSITY_CALC, label: 'حساب الكثافة', icon: <Activity /> },
+    // [صورة لخريطة الكثافة السكانية في سلطنة عمان]
     { id: Section.DENSITY_MAP_ANALYSIS, label: 'تحليل الخرائط', icon: <Map /> },
     { id: Section.OMAN_DENSITY, label: 'كثافة عمان', icon: <Flag /> },
     { id: Section.QUIZ, label: 'اختبار', icon: <Activity /> }
@@ -314,6 +322,7 @@ export const SIXTH_DENSITY_QUIZ: QuizQuestion[] = [
     { id: 1, question: 'تحسب الكثافة السكانية بقسمة عدد السكان على:', options: ['المساحة', 'المواليد', 'الوفيات', 'الموارد'], correctIndex: 0 }
 ];
 
+// [صورة لخريطة التوسعات والفتوحات في الدولة الأموية]
 export const UMAYYAD_SECTIONS = [
     { id: Section.UMAYYAD_RISE, label: 'التأسيس', icon: <Crown /> },
     { id: Section.UMAYYAD_CONQUESTS, label: 'الفتوحات', icon: <Map /> },
@@ -445,11 +454,8 @@ export const UNIT_2_ASSESSMENT_QUESTIONS: QuizQuestion[] = [
     }
 ];
 
-// --- UNIT 3 ASSESSMENT QUESTIONS (Removed to avoid conflict with the interactive component) ---
+// --- UNIT 3 ASSESSMENT QUESTIONS ---
 export const UNIT_3_ASSESSMENT_QUESTIONS: QuizQuestion[] = [
-    // This array is intentionally left empty or minimal as the main assessment logic is now
-    // handled within the Unit3Assessment component itself for better interactivity.
-    // However, if needed for the final exam pool, we can keep the textual representation.
     { id: 1, question: 'السلطة المسؤولة عن حل النزاعات وضمان تطبيق القوانين:', options: ['التنفيذية', 'التشريعية', 'القضائية', 'الإعلامية'], correctIndex: 2 },
     { id: 2, question: 'المجلسان اللذان يتكون منهما مجلس عُمان:', options: ['الدولة والشورى', 'الشورى والوزراء', 'الدولة والقضاء', 'الدولة والوزراء'], correctIndex: 0 },
     { id: 3, question: 'عدد أبواب النظام الأساسي للدولة:', options: ['5', '6', '7', '8'], correctIndex: 2 },
@@ -458,6 +464,7 @@ export const UNIT_3_ASSESSMENT_QUESTIONS: QuizQuestion[] = [
 
 // --- GRADE 5 QUIZZES (RESTORED) ---
 export const FIFTH_SPHERES_CONCEPT_QUIZ: QuizQuestion[] = [
+    // [صورة للمجموعة الشمسية ومدارات الكواكب]
     { id: 1, question: 'المجرة التي تنتمي إليها مجموعتنا الشمسية تسمى:', options: ['درب التبانة', 'المرأة المسلسلة', 'سحابة ماجلان', 'مجرة الدوامة'], correctIndex: 0 },
     { id: 2, question: 'الكوكب الذي نعيش عليها ويسمى بالكوكب المائي هو:', options: ['الأرض', 'المريخ', 'الزهرة', 'عطارد'], correctIndex: 0 },
     { id: 3, question: 'يحتل كوكب الأرض الترتيب ..... قرباً من الشمس:', options: ['الثالث', 'الأول', 'الخامس', 'الثامن'], correctIndex: 0 },
@@ -467,6 +474,7 @@ export const FIFTH_SPHERES_CONCEPT_QUIZ: QuizQuestion[] = [
 export const FIFTH_SPHERES_RELATION_QUIZ: QuizQuestion[] = [
     { id: 1, question: 'الغلاف الذي يحتوي على جميع الكائنات الحية يسمى:', options: ['الغلاف الحيوي', 'الغلاف الصخري', 'الغلاف المائي', 'الغلاف الجوي'], correctIndex: 0 },
     { id: 2, question: 'النسبة التي يغطيها الماء من مساحة الكرة الأرضية:', options: ['71%', '29%', '50%', '90%'], correctIndex: 0 },
+    // [صورة توضيحية لدورة الماء في الطبيعة: التبخر، التكاثف، التساقط]
     { id: 3, question: 'حركة الماء المستمرة بين سطح الأرض والغلاف الجوي تسمى:', options: ['دورة الماء', 'التبخر', 'التكاثف', 'الرياح'], correctIndex: 0 },
     { id: 4, question: 'أي من الآتي يعتبر من مكونات الغلاف الصخري؟', options: ['الجبال والتربة', 'البحار والمحيطات', 'الغازات', 'النباتات'], correctIndex: 0 }
 ];
