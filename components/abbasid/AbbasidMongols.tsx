@@ -1,147 +1,276 @@
-
-import React, { useState } from 'react';
-import { Skull, Ban, Play, RotateCcw, Droplets } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { RefreshCw, Play } from 'lucide-react';
 
 const AbbasidMongols: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'invasion' | 'ain_jalut'>('invasion');
-  const [animate, setAnimate] = useState(false);
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+    const [isSimulating, setIsSimulating] = useState(false);
+    const [mapLoaded, setMapLoaded] = useState(false);
+    const requestRef = useRef<number>();
+    const mapImageRef = useRef<HTMLImageElement | null>(null);
 
-  const startAnimation = () => {
-      setAnimate(false);
-      setTimeout(() => setAnimate(true), 50);
-  };
+    // =========================================================
+    // إعدادات المحاكاة (تم ضبط الإحداثيات بناءً على خريطتك)
+    // =========================================================
+    const gameState = useRef({
+        state: 'WAITING', // WAITING, MOVING, FIGHTING, ENDED
+        timer: 0,
+        // إحداثيات البداية (ذيل السهم الأصفر في الخريطة)
+        mongols: { 
+            x: 620, 
+            y: 140, 
+            color: '#b91c1c', 
+            label: 'جيش هولاكو', 
+            speed: 2, 
+            size: 25, 
+            emoji: '🐎', 
+            health: 100 
+        },
+        // إحداثيات الهدف (نقطة بغداد السوداء في الخريطة)
+        baghdad: { 
+            x: 370, 
+            y: 230, 
+            color: '#166534', 
+            label: 'بغداد', 
+            speed: 0, 
+            size: 30, 
+            emoji: '🏰', 
+            health: 100 
+        }
+    });
 
-  return (
-    <div className="p-6 animate-fade-in space-y-8">
+    useEffect(() => {
+        const img = new Image();
         
-        {/* Navigation Tabs */}
-        <div className="flex justify-center bg-slate-100 p-1 rounded-full max-w-md mx-auto mb-4">
-            <button 
-                onClick={() => { setActiveTab('invasion'); setAnimate(false); }}
-                className={`flex-1 py-2 px-4 rounded-full font-bold transition-all flex items-center justify-center gap-2 ${activeTab === 'invasion' ? 'bg-white shadow text-red-700' : 'text-slate-500'}`}
-            >
-                <Skull size={18} /> سقوط بغداد (الشكل 4)
-            </button>
-            <button 
-                onClick={() => { setActiveTab('ain_jalut'); setAnimate(false); }}
-                className={`flex-1 py-2 px-4 rounded-full font-bold transition-all flex items-center justify-center gap-2 ${activeTab === 'ain_jalut' ? 'bg-white shadow text-green-700' : 'text-slate-500'}`}
-            >
-                <Ban size={18} /> عين جالوت (الشكل 5)
-            </button>
-        </div>
+        // ✅ التعديل هنا: استخدام الاسم الصحيح من قائمة ملفاتك
+        // بما أن الملف داخل مجلد public مباشرة، نكتب اسمه مسبوقاً بـ /
+        img.src = '/map_mongol.png'; 
+        
+        img.onload = () => {
+            mapImageRef.current = img;
+            setMapLoaded(true);
+            draw(); // رسم الإطار الأول
+        };
 
-        {activeTab === 'invasion' ? (
-            <div className="space-y-6 animate-slide-up">
-                <div className="text-center mb-4">
-                    <h3 className="text-xl font-bold text-slate-800">الغزو المغولي وسقوط بغداد (656هـ)</h3>
-                    <p className="text-slate-500 text-sm">كارثة كبرى على الثقافة الإسلامية بقيادة هولاكو</p>
-                </div>
+        // في حال حدوث خطأ في تحميل الصورة
+        img.onerror = () => {
+            console.error("فشل تحميل الصورة: تأكد من وجود map_mongol.png في مجلد public");
+        };
 
-                <div className="relative w-full rounded-2xl overflow-hidden border-4 border-slate-300 shadow-xl bg-slate-200">
-                    <img 
-                        src="./map_mongol.png"
-                        onError={(e) => {e.currentTarget.src = "https://placehold.co/800x400/d1d5db/374151?text=Mongol+Invasion+Map";}}
-                        alt="Mongol Invasion Map"
-                        className="w-full h-auto block"
-                    />
+        return () => {
+            if (requestRef.current) cancelAnimationFrame(requestRef.current);
+        };
+    }, []);
 
-                    <svg viewBox="0 0 800 400" preserveAspectRatio="none" className="absolute inset-0 w-full h-full pointer-events-none">
-                        <defs>
-                            <marker id="arrowYellow" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
-                                <path d="M0,0 L0,6 L6,3 z" fill="#F59E0B" />
-                            </marker>
-                        </defs>
+    const animate = () => {
+        update();
+        draw();
+        if (gameState.current.state !== 'ENDED_STOP') {
+            requestRef.current = requestAnimationFrame(animate);
+        }
+    };
 
-                        {/* Highlight Baghdad */}
-                        <circle cx="380" cy="220" r="8" fill="none" stroke="red" strokeWidth="2" className="animate-ping" />
+    const update = () => {
+        const state = gameState.current;
+        const { mongols, baghdad } = state;
 
-                        {/* Tigris River Turning Black Effect */}
-                        {animate && (
-                            <g style={{ animationDelay: '3.5s', opacity: 0, animationFillMode: 'forwards' }} className="animate-fade-in">
-                                <path d="M370,210 Q380,220 390,230" stroke="black" strokeWidth="4" opacity="0.7" />
-                                <text x="390" y="240" fontSize="12" fontWeight="bold" fill="black">نهر دجلة (حبر الكتب)</text>
-                            </g>
-                        )}
+        if (state.state === 'MOVING') {
+            const dx = baghdad.x - mongols.x;
+            const dy = baghdad.y - mongols.y;
+            const distance = Math.sqrt(dx*dx + dy*dy);
 
-                        {animate && (
-                            <>
-                                <path 
-                                    d="M780,100 Q600,150 500,180 T390,220" 
-                                    fill="none" 
-                                    stroke="#F59E0B" 
-                                    strokeWidth="8" 
-                                    markerEnd="url(#arrowYellow)"
-                                    className="animate-[draw_3s_linear_forwards]"
-                                    strokeDasharray="500"
-                                    strokeDashoffset="500"
-                                    strokeLinecap="round"
-                                />
-                                <text x="360" y="210" fontSize="40" className="animate-bounce" style={{ animationDelay: '3s', opacity: 0, animationFillMode: 'forwards' }}>🔥</text>
-                            </>
-                        )}
-                    </svg>
+            // التحرك نحو الهدف
+            if (distance > mongols.size/2 + baghdad.size/2) {
+                const angle = Math.atan2(dy, dx);
+                mongols.x += Math.cos(angle) * mongols.speed;
+                mongols.y += Math.sin(angle) * mongols.speed;
+            } else {
+                state.state = 'FIGHTING';
+            }
+        } else if (state.state === 'FIGHTING') {
+            state.timer++;
+            // تأثير الاهتزاز أثناء المعركة
+            if (state.timer % 4 === 0) {
+                mongols.x = baghdad.x + (Math.random() - 0.5) * 12;
+                mongols.y = baghdad.y + (Math.random() - 0.5) * 12;
+            }
+            // مدة المعركة (حوالي 3 ثواني)
+            if (state.timer > 180) {
+                state.state = 'ENDED';
+                baghdad.health = 0;
+            }
+        }
+    };
 
-                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2">
-                        <button onClick={startAnimation} className="bg-red-600 text-white px-6 py-2 rounded-full font-bold shadow-lg flex items-center gap-2 hover:scale-105 transition-transform">
-                            {animate ? <RotateCcw size={18}/> : <Play size={18}/>}
-                            {animate ? "إعادة" : "بدء الزحف"}
-                        </button>
+    const draw = () => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+        const state = gameState.current;
+
+        // تنظيف الكانفاس
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // 1. رسم الخريطة كخلفية
+        if (mapImageRef.current) {
+            // رسم الصورة لتملأ الكانفاس مع الحفاظ على النسبة
+            ctx.drawImage(mapImageRef.current, 0, 0, canvas.width, canvas.height);
+        } else {
+            // خلفية مؤقتة
+            ctx.fillStyle = '#eee';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#666';
+            ctx.textAlign = "center";
+            ctx.fillText("جاري تحميل الخريطة...", canvas.width/2, canvas.height/2);
+        }
+
+        // دالة مساعدة لرسم العناصر
+        const drawEntity = (entity: any) => {
+            // الظل
+            ctx.shadowColor = 'rgba(0,0,0,0.5)';
+            ctx.shadowBlur = 8;
+            
+            // الدائرة
+            ctx.fillStyle = entity.color;
+            ctx.beginPath();
+            ctx.arc(entity.x, entity.y, entity.size, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.shadowBlur = 0; // إلغاء الظل للنص
+
+            // الأيقونة
+            ctx.font = `${entity.size}px Arial`;
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(entity.emoji, entity.x, entity.y);
+
+            // الاسم (مع خلفية بيضاء لضمان القراءة فوق الخريطة)
+            ctx.font = "bold 12px Tajawal";
+            const textWidth = ctx.measureText(entity.label).width;
+            ctx.fillStyle = "rgba(255,255,255,0.85)";
+            ctx.fillRect(entity.x - textWidth/2 - 6, entity.y - entity.size - 24, textWidth + 12, 20);
+            
+            ctx.fillStyle = "#000";
+            ctx.fillText(entity.label, entity.x, entity.y - entity.size - 10);
+        };
+
+        // 2. رسم الجيوش
+        if (state.baghdad.health > 0) drawEntity(state.baghdad);
+        drawEntity(state.mongols);
+
+        // 3. تأثيرات المعركة
+        if (state.state === 'FIGHTING') {
+             ctx.font = "40px Arial";
+             ctx.textAlign = "center";
+             ctx.fillText(Math.random() > 0.5 ? "💥" : "🔥", state.baghdad.x, state.baghdad.y - 10);
+        }
+
+        // 4. شاشة النهاية
+        if (state.state === 'ENDED') {
+            // طبقة تعتيم
+            ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // النصوص
+            ctx.shadowColor = "black";
+            ctx.shadowBlur = 10;
+            ctx.fillStyle = "#fbbf24"; // لون ذهبي
+            ctx.font = "bold 36px Tajawal";
+            ctx.textAlign = "center";
+            ctx.fillText("سقوط بغداد (656هـ)", canvas.width/2, canvas.height/2 - 10);
+            
+            ctx.fillStyle = "#fff";
+            ctx.font = "24px Tajawal";
+            ctx.fillText("وانتهت الخلافة العباسية", canvas.width/2, canvas.height/2 + 40);
+            
+            // إيقاف الأنيميشن
+            if (requestRef.current) cancelAnimationFrame(requestRef.current);
+            setIsSimulating(false);
+            state.state = 'ENDED_STOP'; // حالة خاصة لمنع إعادة التشغيل الخطأ
+        }
+    };
+
+    const handleStart = () => {
+        if (!mapLoaded) return;
+        
+        // إعادة تهيئة الحالة للبداية
+        gameState.current.state = 'MOVING';
+        gameState.current.baghdad.health = 100;
+        // إعادة جيش المغول لموقعه الأصلي (بداية السهم)
+        gameState.current.mongols.x = 620;
+        gameState.current.mongols.y = 140;
+        gameState.current.timer = 0;
+        
+        setIsSimulating(true);
+        animate();
+    };
+
+    return (
+        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            {/* بطاقة العنوان */}
+            <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100">
+                <div className="flex items-center gap-4 mb-4">
+                    <div className="w-12 h-12 bg-rose-50 rounded-2xl flex items-center justify-center text-rose-600 text-2xl">⚔️</div>
+                    <div>
+                        <h2 className="text-2xl font-black text-slate-800">محاكاة الغزو المغولي</h2>
+                        <p className="text-slate-500 text-sm font-bold">تتبع مسار هولاكو نحو بغداد (الشكل ٤)</p>
                     </div>
                 </div>
+                <p className="text-slate-600 leading-relaxed text-sm font-medium">
+                    توضح الخريطة أدناه خط سير جيش المغول (باللون الأصفر) واجتياحهم للأراضي الإسلامية حتى وصولهم إلى عاصمة الخلافة.
+                </p>
+            </div>
 
-                {/* Text Analysis from Page 78 */}
-                <div className="bg-slate-50 p-4 rounded-xl border border-red-200 text-sm text-slate-700">
-                    <h4 className="font-bold text-red-800 flex items-center gap-2 mb-2"><Droplets size={16}/> كارثة ثقافية:</h4>
-                    <p>
-                        "أشعلوا النار في بيت الحكمة، وألقوا بالكتب في نهر دجلة؛ مما أدى إلى <span className="font-bold">تلوّن أغلب مياه النهر باللون الأسود</span> (من حبر الكتب)، بالإضافة لقتل العلماء وتدمير المساجد والقصور."
-                    </p>
+            {/* منطقة المحاكاة (الخريطة) */}
+            <div className="bg-slate-900 rounded-[2rem] p-2 shadow-xl overflow-hidden relative border-4 border-slate-800">
+                <canvas 
+                    ref={canvasRef} 
+                    width={800} 
+                    height={450} 
+                    className="w-full h-auto rounded-xl bg-slate-100"
+                />
+                
+                {/* أزرار التحكم */}
+                <div className="absolute bottom-6 left-0 right-0 flex justify-center gap-4 z-10">
+                    {!isSimulating && (
+                        <button 
+                            onClick={handleStart}
+                            disabled={!mapLoaded}
+                            className="bg-rose-600 hover:bg-rose-700 text-white px-8 py-3 rounded-full font-black shadow-lg flex items-center gap-2 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed border-2 border-white/20"
+                        >
+                            <Play className="fill-white" size={20} />
+                            ابدأ الحملة
+                        </button>
+                    )}
+                    {isSimulating && (
+                         <button 
+                            onClick={handleStart}
+                            className="bg-black/50 backdrop-blur-md hover:bg-black/70 text-white px-6 py-3 rounded-full font-bold shadow-lg flex items-center gap-2 transition-all border border-white/10"
+                        >
+                            <RefreshCw size={18} />
+                            إعادة
+                        </button>
+                    )}
                 </div>
             </div>
-        ) : (
-            <div className="space-y-6 animate-slide-up">
-                 <div className="text-center mb-4">
-                    <h3 className="text-xl font-bold text-slate-800">معركة عين جالوت (الشكل 5)</h3>
-                    <p className="text-slate-500 text-sm">استطاع المسلمون (المماليك) إيقاف الزحف المغولي بعد هزيمتهم</p>
-                </div>
 
-                 <div className="relative w-full rounded-2xl overflow-hidden border-4 border-green-300 shadow-xl bg-slate-200">
-                    <img 
-                        src="./map_ain_jalut.png"
-                        onError={(e) => {e.currentTarget.src = "https://placehold.co/800x400/dcfce7/166534?text=Ain+Jalut+Map";}}
-                        alt="Ain Jalut Map"
-                        className="w-full h-auto block"
-                    />
-                    
-                    <svg viewBox="0 0 800 400" preserveAspectRatio="none" className="absolute inset-0 w-full h-full pointer-events-none">
-                        <defs>
-                            <marker id="arrowMongol2" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#F59E0B" /></marker>
-                            <marker id="arrowMamluk" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#4B5563" /></marker>
-                        </defs>
-                        <circle cx="260" cy="215" r="8" fill="none" stroke="red" strokeWidth="2" className="animate-ping" />
-                        {animate && (
-                            <>
-                                <path d="M450,120 Q400,150 270,210" fill="none" stroke="#F59E0B" strokeWidth="8" markerEnd="url(#arrowMongol2)" className="animate-[draw_2s_linear_forwards]" strokeDasharray="300" strokeDashoffset="300" strokeLinecap="round"/>
-                                <path d="M100,350 Q180,300 250,230" fill="none" stroke="#475569" strokeWidth="8" markerEnd="url(#arrowMamluk)" className="animate-[draw_2s_linear_forwards]" strokeDasharray="300" strokeDashoffset="300" strokeLinecap="round"/>
-                                <text x="240" y="210" fontSize="50" className="animate-bounce" style={{ animationDelay: '2s', opacity: 0, animationFillMode: 'forwards' }}>⚔️</text>
-                            </>
-                        )}
-                    </svg>
-
-                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2">
-                        <button onClick={startAnimation} className="bg-green-600 text-white px-6 py-2 rounded-full font-bold shadow-lg flex items-center gap-2 hover:scale-105 transition-transform">
-                            {animate ? <RotateCcw size={18}/> : <Play size={18}/>}
-                            {animate ? "إعادة" : "بدء المعركة"}
-                        </button>
-                    </div>
+            {/* المعلومات التاريخية */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                 <div className="bg-amber-50 p-5 rounded-2xl border border-amber-100">
+                     <h4 className="font-bold text-amber-900 mb-2 flex items-center gap-2">⚠️ الوضع العسكري</h4>
+                     <p className="text-xs text-amber-800 leading-relaxed">
+                         تحرك الجيش المغولي بكثافة عددية هائلة، مستخدماً أدوات حصار متطورة، في حين كانت تحصينات بغداد مهملة والجيش العباسي صغيراً نسبياً بسبب ضعف التمويل والانقسامات.
+                     </p>
+                 </div>
+                 <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200">
+                     <h4 className="font-bold text-slate-900 mb-2 flex items-center gap-2">📍 معلومة إثرائية</h4>
+                     <p className="text-xs text-slate-600 leading-relaxed">
+                         استمر حصار بغداد حوالي 12 يوماً فقط قبل أن تستسلم المدينة، مما يدل على الفارق الهائل في موازين القوى والتخطيط العسكري آنذاك.
+                     </p>
                  </div>
             </div>
-        )}
-        
-        <style>{`
-            @keyframes draw { to { stroke-dashoffset: 0; } }
-        `}</style>
-    </div>
-  );
+        </div>
+    );
 };
 
 export default AbbasidMongols;
